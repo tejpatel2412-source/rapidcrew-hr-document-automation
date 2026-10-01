@@ -3,7 +3,17 @@ import type { Alignment, CompanyData, DocumentData, EmployeeData, SalaryComponen
 export const uid = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const today = () => new Date().toISOString().slice(0, 10);
 export const safeFilename = (s: string) => s.replace(/[^a-z0-9._-]+/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-export const formatDate = (v?: string) => v ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${v}T00:00:00`)) : '';
+export const formatDate = (v?: string, format='DD MMM YYYY') => {
+  if (!v) return '';
+  const date = new Date(`${v}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return v;
+  const day=String(date.getDate()).padStart(2,'0');
+  const month=String(date.getMonth()+1).padStart(2,'0');
+  const year=String(date.getFullYear());
+  if(format==='DD/MM/YYYY') return `${day}/${month}/${year}`;
+  if(format==='MM/DD/YYYY') return `${month}/${day}/${year}`;
+  return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+};
 export const money = (minor: bigint, currency='INR') => new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 2 }).format(Number(minor) / 100);
 export const parseMoneyMinor = (v?: string) => {
   const clean = (v || '0').replace(/[^0-9.-]/g, '');
@@ -33,11 +43,58 @@ export function amountInWords(minor: bigint, currency='INR') {
 
 export function placeholderMap(company: CompanyData | undefined, employee: EmployeeData | undefined, doc: DocumentData) {
   const totals = salaryTotals(doc.salary);
+  const dateFormat=company?.dateFormat || 'DD MMM YYYY';
+  const fmt=(value?:string)=>formatDate(value,dateFormat);
+  const probation=doc.probationPeriod?.trim() || '';
+  const offerValidUntil=doc.offerValidUntil?.trim() || '';
+  const notice=doc.noticePeriod?.trim() || '';
+  const resignation=doc.resignationDate?.trim() || '';
+  const reference=doc.referenceNumber?.trim() || '';
+  const employmentType=employee?.employmentType?.trim() || '';
+  const reportingManager=employee?.reportingManager?.trim() || '';
   return {
-    employee_name: employee?.fullName || '', employee_id: employee?.employeeId || '', designation: employee?.designation || '', department: employee?.department || '', company_name: company?.companyName || '', company_address: [company?.address, company?.city, company?.state, company?.country, company?.pin].filter(Boolean).join(', '), joining_date: formatDate(employee?.joiningDate), last_working_date: formatDate(employee?.lastWorkingDate), document_date: formatDate(doc.documentDate), salary: employee?.basicSalary || '', ctc: employee?.ctc || '', work_location: employee?.workLocation || '', signatory_name: company?.signatoryName || '', salary_month: doc.salaryMonth || '', salary_year: doc.salaryYear || '', gross_earnings: money(totals.gross, company?.currency), total_deductions: money(totals.deductions, company?.currency), net_pay: money(totals.net, company?.currency), amount_in_words: amountInWords(totals.net, company?.currency)
+    employee_name: employee?.fullName || '',
+    employee_id: employee?.employeeId || '',
+    employee_address: employee?.address || '',
+    designation: employee?.designation || '',
+    department: employee?.department || '',
+    company_name: company?.companyName || '',
+    company_address: [company?.address, company?.city, company?.state, company?.country, company?.pin].filter(Boolean).join(', '),
+    joining_date: fmt(employee?.joiningDate),
+    last_working_date: fmt(doc.lastWorkingDate || employee?.lastWorkingDate),
+    document_date: fmt(doc.documentDate),
+    relieving_date: fmt(doc.relievingDate || doc.documentDate),
+    resignation_date: fmt(doc.resignationDate),
+    appointment_date: fmt(doc.appointmentDate || doc.documentDate),
+    offer_valid_until: fmt(doc.offerValidUntil),
+    reference_number: reference,
+    custom_remarks: doc.customRemarks || '',
+    salary: employee?.basicSalary || '',
+    ctc: employee?.ctc || '',
+    work_location: employee?.workLocation || '',
+    employment_type: employmentType,
+    reporting_manager: reportingManager,
+    signatory_name: company?.signatoryName || '',
+    salary_month: doc.salaryMonth || '',
+    salary_year: doc.salaryYear || '',
+    probation_period: probation,
+    notice_period: notice,
+    benefits: doc.benefits || '',
+    special_conditions: doc.specialConditions || '',
+    terms: doc.terms || '',
+    probation_line: probation ? `Probation Period: ${probation}.` : '',
+    offer_validity_line: offerValidUntil ? `This offer is valid until ${fmt(offerValidUntil)}.` : '',
+    notice_line: notice ? `Notice Period: ${notice}.` : '',
+    resignation_line: resignation ? `Resignation Date: ${fmt(resignation)}.` : '',
+    reference_line: reference ? `Reference No: ${reference}` : '',
+    employment_type_line: employmentType ? `Employment Type: ${employmentType}.` : '',
+    reporting_manager_line: reportingManager ? `Reporting Manager: ${reportingManager}.` : '',
+    gross_earnings: money(totals.gross, company?.currency),
+    total_deductions: money(totals.deductions, company?.currency),
+    net_pay: money(totals.net, company?.currency),
+    amount_in_words: amountInWords(totals.net, company?.currency),
   } as Record<string,string>;
 }
-
 export function renderPlaceholders(html: string, values: Record<string,string>) { return html.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, k) => values[k] ?? `{{${k}}}`); }
 export function unresolvedPlaceholders(html: string){ return [...html.matchAll(/{{\s*([a-zA-Z0-9_]+)\s*}}/g)].map(m=>m[1]); }
 export function alignmentStyle(a: Alignment){ return { textAlign: a } as const; }

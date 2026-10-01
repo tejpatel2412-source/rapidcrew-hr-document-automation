@@ -1,7 +1,7 @@
 import type { CompanyData, DocumentData, EmployeeData, SalaryComponents } from './types';
 import { amountInWords, money, parseMoneyMinor, salaryTotals } from './utils';
 
-export const SALARY_SYSTEM_FOOTER = 'This is a System Generated Pay Slip and does not require any Signature';
+export const SALARY_SYSTEM_FOOTER = 'This is a system-generated payslip.';
 
 export type SalarySlipPairRow = [string, string, string, string];
 export interface SalarySlipAmountRow { label: string; amount: string; minor: bigint; }
@@ -58,8 +58,8 @@ export function buildSalarySlipView(company: CompanyData, employee: EmployeeData
       ['Designation', employee.designation || '', 'DOJ', ddmmyyyy(employee.joiningDate)],
       ['PAN', employee.pan || '', 'UAN', employee.uan || ''],
       ['ESI A/c No', employee.esicNumber || '', 'PF No', employee.pfNumber || ''],
-      ['Working Days', doc.workingDays || '', 'Bank A/c No', doc.bankAccountNumber || ''],
-      ['No of Days Present', doc.paidDays || '', 'LOP Days', doc.lopDays || ''],
+      ['Working Days', doc.workingDays || '', 'Bank A/c No', employee.bankAccountNumber || doc.bankAccountNumber || ''],
+      ['Days Present', doc.paidDays || '', 'LOP Days', doc.lopDays || ''],
     ] as SalarySlipPairRow[],
     earnings: [...requiredEarnings, ...optionalEarnings],
     deductions,

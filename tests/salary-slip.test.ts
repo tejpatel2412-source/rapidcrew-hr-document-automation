@@ -36,7 +36,7 @@ describe('salary slip view model', () => {
       ['PAN', 'ABCDE1234F', 'UAN', '100200300400'],
       ['ESI A/c No', 'ESI-88', 'PF No', 'PF-77'],
       ['Working Days', '31', 'Bank A/c No', '1234567890'],
-      ['No of Days Present', '31', 'LOP Days', '0'],
+      ['Days Present', '31', 'LOP Days', '0'],
     ]);
   });
 
@@ -46,7 +46,7 @@ describe('salary slip view model', () => {
     expect(view.totals.deductions).toBe(0n);
     expect(view.totals.net).toBe(7000000n);
     expect(view.amountInWords).toBe('Rupees Seventy Thousand Only');
-    expect(view.systemFooter).toBe('This is a System Generated Pay Slip and does not require any Signature');
+    expect(view.systemFooter).toBe('This is a system-generated payslip.');
   });
 
   it('keeps required earning rows and omits zero optional deductions', () => {
