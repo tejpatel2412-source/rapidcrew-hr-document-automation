@@ -17,14 +17,15 @@ describe('Rapidcrew defaults', () => {
     expect(defaultCompany.signatureAlignment).toBe('left');
     expect(defaultCompany.stampAlignment).toBe('left');
     expect(defaultCompany.stampWidth).toBeGreaterThanOrEqual(90);
+    expect(defaultCompany.signatoryName).toBe('Sumeet Singh');
+    expect(defaultCompany.signatoryDesignation).toBe('HR Executive');
   });
 
-  it('creates Rapidcrew-named defaults with stamp enabled only for signature-based letters', () => {
+  it('creates Rapidcrew-named defaults with company stamp enabled for every document type', () => {
     const templates = defaultTemplates();
     expect(templates).toHaveLength(5);
     for (const template of templates) expect(template.name).toMatch(/^Rapidcrew /);
-    expect(templates.find(t=>t.type==='salary-slip')?.includeStampByDefault).toBe(false);
-    for (const template of templates.filter(t=>t.type!=='salary-slip')) expect(template.includeStampByDefault).toBe(true);
+    for (const template of templates) expect(template.includeStampByDefault).toBe(true);
   });
 
   it('wires document-specific optional fields into default letter wording', () => {
