@@ -68,7 +68,9 @@ export function migrateHistoryRecord(history: HistoryData): HistoryData {
 
 export function migrateRapidcrewDefaultsV5(company: CompanyData): CompanyData {
   const migrated=migrateAuthorizationAlignmentRecord(company);
-  const rapidcrewIdentity=isLegacyRapidcrewName(company.companyName)||isLegacyRapidcrewName(company.legalCompanyName);
+  const companyName=(company.companyName||'').trim();
+  const legalName=(company.legalCompanyName||'').trim();
+  const rapidcrewIdentity=(!companyName&&!legalName)||(Boolean(companyName)&&isLegacyRapidcrewName(companyName))||(Boolean(legalName)&&isLegacyRapidcrewName(legalName));
   if(!rapidcrewIdentity)return migrated;
   return {
     ...migrated,
