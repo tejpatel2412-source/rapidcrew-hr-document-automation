@@ -51,7 +51,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .salary-total-row th, .salary-total-row td { font-weight: 700; background: #fafafa; }
 .salary-net-row { display: flex; justify-content: space-between; border: 1px solid #555; border-top: 0; padding: 7px 8px; font-size: 12px; }
 .salary-words-row { border: 1px solid #555; border-top: 0; padding: 7px 8px; display: grid; grid-template-columns: 34% 1fr; gap: 10px; }
-.salary-system-footer { margin-top: 16px; text-align: center; font-size: 9px; font-weight: 700; }
+.salary-system-footer { margin-top: 12px; text-align: center; font-size: 9px; font-weight: 700; }
+.salary-stamp-block { margin-top: 14px; min-height: 72px; text-align: left; break-inside: avoid; page-break-inside: avoid; }
+.salary-stamp-image { display: inline-block; max-width: 130px; max-height: 92px; object-fit: contain; }
 .salary-empty-state { padding: 40px 16px; text-align: center; color: #6b7280; }
 
 @media print {
