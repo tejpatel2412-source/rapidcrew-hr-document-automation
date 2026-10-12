@@ -17,7 +17,7 @@ export default function CompanySetup(){
  function patch<K extends keyof CompanyData>(k:K,v:CompanyData[K]){setData(s=>({...s,[k]:v}))}
  const say=(m:string)=>{setToast(m);setTimeout(()=>setToast(''),2500)};
  async function upload(k:'logoDataUrl'|'signatureDataUrl'|'stampDataUrl',file?:File){if(!file)return;try{patch(k,await imageFileToDataUrl(file));say('Image ready to save');}catch(e){say(e instanceof Error?e.message:'Invalid image')}}
- async function save(){try{await db.company.put({...data,id:'company',updatedAt:new Date().toISOString()});say('Company settings saved')}catch{say('Unable to save company settings.')}}
+ async function save(){try{const saved={...data,id:'company' as const,updatedAt:new Date().toISOString()};await db.company.put(saved);setData(saved);window.dispatchEvent(new CustomEvent('rapidcrew-data-changed',{detail:{scope:'company'}}));say('Company settings saved')}catch{say('Unable to save company settings.')}}
  return <AppShell><PageHeader title="Company Setup" description="Upload company assets once. Every HR document reuses the same branding; applicable letters use the signature and official stamp." action={<Button onClick={save}>Save Company</Button>}/>
  <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
   <div className="space-y-6">
