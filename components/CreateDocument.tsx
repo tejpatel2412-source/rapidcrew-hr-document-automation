@@ -14,7 +14,7 @@ import { downloadDocx, downloadPdf } from '@/lib/exporters';
 
 const salaryBlank:SalaryComponents={basic:'0',hra:'0',other:'0',conveyance:'0',medical:'0',specialAllowance:'0',bonus:'0',incentive:'0',otherEarnings:'0',pf:'0',professionalTax:'0',tds:'0',esi:'0',loan:'0',lop:'0',otherDeduction:'0'};
 const names:Record<DocumentType,string>={'salary-slip':'Salary Slip','offer-letter':'Offer Letter','appointment-letter':'Appointment Letter','experience-letter':'Experience Letter','relieving-letter':'Relieving Letter'};
-const newDoc=(type:DocumentType):DocumentData=>({id:uid(),type,employeeId:'',templateId:'',documentDate:today(),salaryMonth:new Date().toLocaleString('en',{month:'long'}),salaryYear:String(new Date().getFullYear()),workingDays:'30',paidDays:'30',lopDays:'0',bankAccountNumber:'',salary:{...salaryBlank},createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+const newDoc=(type:DocumentType):DocumentData=>({id:uid(),type,employeeId:'',templateId:'',documentDate:today(),includeStamp:true,salaryMonth:new Date().toLocaleString('en',{month:'long'}),salaryYear:String(new Date().getFullYear()),workingDays:'30',paidDays:'30',lopDays:'0',bankAccountNumber:'',salary:{...salaryBlank},createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
 type PatchDocument = <K extends keyof DocumentData>(key:K,value:DocumentData[K])=>void;
 
 export default function CreateDocument(){
@@ -28,15 +28,31 @@ export default function CreateDocument(){
  const [mobileTab,setMobileTab]=useState<'edit'|'preview'|'export'>('edit');
  const say=(m:string)=>{setToast(m);setTimeout(()=>setToast(''),2600)};
 
- useEffect(()=>{(async()=>{
-   await ensureDefaults();
+ async function refreshData(){
    const [c,e,t]=await Promise.all([db.company.get('company'),db.employees.toArray(),db.templates.toArray()]);
    setCompany(c);setEmployees(e);setTemplates(t);
-   const saved=localStorage.getItem('rapidcrew_edit_doc');
-   if(saved){try{const parsed=JSON.parse(saved) as DocumentData;setDoc({...parsed,includeStamp:parsed.includeStamp??true});localStorage.removeItem('rapidcrew_edit_doc');return}catch{}}
-   const p=new URLSearchParams(window.location.search).get('type') as DocumentType|null;
-   if(p&&names[p])setDoc(newDoc(p));
- })()},[]);
+ }
+
+ useEffect(()=>{
+   const refresh=()=>{void refreshData()};
+   const visible=()=>{if(document.visibilityState==='visible')refresh()};
+   window.addEventListener('focus',refresh);
+   window.addEventListener('rapidcrew-data-changed',refresh as EventListener);
+   document.addEventListener('visibilitychange',visible);
+   (async()=>{
+     await ensureDefaults();
+     await refreshData();
+     const saved=localStorage.getItem('rapidcrew_edit_doc');
+     if(saved){try{const parsed=JSON.parse(saved) as DocumentData;setDoc({...parsed,includeStamp:parsed.includeStamp??true});localStorage.removeItem('rapidcrew_edit_doc');return}catch{}}
+     const p=new URLSearchParams(window.location.search).get('type') as DocumentType|null;
+     if(p&&names[p])setDoc(newDoc(p));
+   })();
+   return ()=>{
+     window.removeEventListener('focus',refresh);
+     window.removeEventListener('rapidcrew-data-changed',refresh as EventListener);
+     document.removeEventListener('visibilitychange',visible);
+   };
+ },[]);
 
  const employee=employees.find(e=>e.id===doc.employeeId);
  const matching=templates.filter(t=>t.type===doc.type);
@@ -59,9 +75,39 @@ export default function CreateDocument(){
  function changeType(type:DocumentType){setDoc(newDoc(type));setMobileTab('edit')}
  const patch:PatchDocument=(key,value)=>setDoc(d=>({...d,[key]:value,updatedAt:new Date().toISOString()}));
  function patchSalary(k:keyof SalaryComponents,v:string){setDoc(d=>({...d,salary:{...d.salary!,[k]:v},updatedAt:new Date().toISOString()}))}
- async function storeHistory(){if(!employee||!template)return;await db.history.put({id:doc.id,documentType:doc.type,employeeName:employee.fullName,createdAt:new Date().toISOString(),templateName:template.name,document:{...doc,updatedAt:new Date().toISOString()}})}
- async function runExport(kind:'pdf'|'docx'){if(errors.length){say(errors[0]);return}if(!company||!employee||!template)return;setBusy(true);try{await storeHistory();if(kind==='pdf')await downloadPdf(company,employee,doc,template);else await downloadDocx(company,employee,doc,template);say(kind==='pdf'?'PDF downloaded':'Word file generated')}catch(e){console.error(e);say(kind==='pdf'?'Unable to generate PDF.':'Unable to create Word document.')}finally{setBusy(false)}}
- function print(){if(errors.length){say(errors[0]);return}void storeHistory();window.print()}
+ async function latestDocumentData(){
+   const [freshCompany,freshEmployee,freshTemplates]=await Promise.all([
+     db.company.get('company'),
+     doc.employeeId?db.employees.get(doc.employeeId):Promise.resolve(undefined),
+     db.templates.where('type').equals(doc.type).toArray(),
+   ]);
+   const freshTemplate=freshTemplates.find(t=>t.id===doc.templateId)||freshTemplates.find(t=>t.isDefault)||freshTemplates[0];
+   if(freshCompany)setCompany(freshCompany);
+   if(freshEmployee)setEmployees(list=>list.map(item=>item.id===freshEmployee.id?freshEmployee:item));
+   if(freshTemplates.length)setTemplates(current=>[...current.filter(t=>t.type!==doc.type),...freshTemplates]);
+   return {freshCompany,freshEmployee,freshTemplate};
+ }
+ async function storeHistory(historyEmployee=employee,historyTemplate=template){if(!historyEmployee||!historyTemplate)return;await db.history.put({id:doc.id,documentType:doc.type,employeeName:historyEmployee.fullName,createdAt:new Date().toISOString(),templateName:historyTemplate.name,document:{...doc,updatedAt:new Date().toISOString()}})}
+ async function runExport(kind:'pdf'|'docx'){
+   setBusy(true);
+   try{
+     const {freshCompany,freshEmployee,freshTemplate}=await latestDocumentData();
+     const currentErrors=validateForExport(freshCompany,freshEmployee,doc,freshTemplate);
+     if(currentErrors.length){say(currentErrors[0]);return}
+     if(!freshCompany||!freshEmployee||!freshTemplate)return;
+     await storeHistory(freshEmployee,freshTemplate);
+     if(kind==='pdf')await downloadPdf(freshCompany,freshEmployee,doc,freshTemplate);
+     else await downloadDocx(freshCompany,freshEmployee,doc,freshTemplate);
+     say(kind==='pdf'?'PDF downloaded with latest data':'Word file generated with latest data');
+   }catch(e){console.error(e);say(kind==='pdf'?'Unable to generate PDF.':'Unable to create Word document.')}finally{setBusy(false)}
+ }
+ async function print(){
+   const {freshCompany,freshEmployee,freshTemplate}=await latestDocumentData();
+   const currentErrors=validateForExport(freshCompany,freshEmployee,doc,freshTemplate);
+   if(currentErrors.length){say(currentErrors[0]);return}
+   await storeHistory(freshEmployee,freshTemplate);
+   requestAnimationFrame(()=>window.print());
+ }
 
  return <AppShell><div className="no-print"><PageHeader title="Create Document" description="Choose a document, select an employee, and enter only the details needed for that document."/></div>
  <div className="no-print mb-4 flex rounded-lg border bg-white p-1 lg:hidden"><button onClick={()=>setMobileTab('edit')} className={`flex-1 rounded-md py-2 text-sm font-semibold ${mobileTab==='edit'?'bg-red-50 text-[#8B0000]':''}`}>EDIT</button><button onClick={()=>setMobileTab('preview')} className={`flex-1 rounded-md py-2 text-sm font-semibold ${mobileTab==='preview'?'bg-red-50 text-[#8B0000]':''}`}>PREVIEW</button><button onClick={()=>setMobileTab('export')} className={`flex-1 rounded-md py-2 text-sm font-semibold ${mobileTab==='export'?'bg-red-50 text-[#8B0000]':''}`}>EXPORT</button></div>
@@ -70,7 +116,7 @@ export default function CreateDocument(){
    <Card className="p-5"><div className="grid gap-4"><SelectField label="Document Type" value={doc.type} onChange={e=>changeType(e.target.value as DocumentType)}>{Object.entries(names).map(([v,n])=><option key={v} value={v}>{n}</option>)}</SelectField><SelectField label={doc.type==='offer-letter'?'Employee / Candidate *':'Employee *'} value={doc.employeeId} onChange={e=>patch('employeeId',e.target.value)}><option value="">Select saved employee</option>{employees.map(e=><option key={e.id} value={e.id}>{e.fullName} · {e.employeeId}</option>)}</SelectField></div></Card>
    {employee&&<Card className="p-5"><div className="mb-3 text-sm font-bold">Auto-filled Details</div><div className="grid grid-cols-2 gap-3 text-xs"><Info k="Name" v={employee.fullName}/><Info k="Designation" v={employee.designation}/><Info k="Department" v={employee.department}/><Info k="Joining Date" v={employee.joiningDate}/><Info k="Work Location" v={employee.workLocation}/><Info k="CTC" v={employee.ctc}/>{doc.type==='salary-slip'&&<><Info k="PAN" v={employee.pan}/><Info k="PF / UAN" v={[employee.pfNumber,employee.uan].filter(Boolean).join(' / ')}/></>}</div></Card>}
    <SpecificFields doc={doc} employee={employee} patch={patch} patchSalary={patchSalary}/>
-   {doc.type!=='salary-slip'&&<AuthorizationOptions company={company} doc={doc} patch={patch}/>}
+   <AuthorizationOptions company={company} doc={doc} patch={patch}/>
    {doc.type!=='salary-slip'&&template&&<details className="rounded-xl border border-gray-200 bg-white"><summary className="cursor-pointer px-5 py-4 text-sm font-bold">Edit letter wording (optional)</summary><div className="border-t border-gray-100 p-5"><RichTextEditor value={doc.customBodyHtml ?? template.bodyHtml} onChange={html=>patch('customBodyHtml',html)}/></div></details>}
    <Button className="w-full py-3" onClick={()=>setReview(true)}><FileCheck2 size={18}/>Final Review</Button>
   </div>
