@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultCompany } from '../lib/defaults';
-import { migrateAuthorizationAlignmentRecord, migrateCompanyRecord, migrateDocumentRecord, migrateLetterheadCompanyRecord, migrateTemplateRecord } from '../lib/migrations';
+import { migrateAuthorizationAlignmentRecord, migrateCompanyRecord, migrateDocumentRecord, migrateLetterheadCompanyRecord, migrateRapidcrewDefaultsV5, migrateTemplateRecord } from '../lib/migrations';
 import type { CompanyData, DocumentData, TemplateData } from '../lib/types';
 
 describe('browser data migration', () => {
@@ -21,6 +21,16 @@ describe('browser data migration', () => {
     expect(migrated.phone).toBe('+91 (972) 525-7676');
     expect(migrated.address).toContain('Zion Z One Building');
     expect(migrated.email).toBe('keep@rapidcrew.test');
+  });
+
+  it('upgrades a short Rapidcrew company name to the full default identity and signatory', () => {
+    const legacy = { ...defaultCompany, companyName: 'Rapidcrew', legalCompanyName: 'Rapidcrew', signatoryName: '', signatoryDesignation: '', stampDataUrl: 'data:image/png;base64,AA==' } satisfies CompanyData;
+    const migrated = migrateRapidcrewDefaultsV5(legacy);
+    expect(migrated.companyName).toBe('RapidCrew Solutions Private Limited');
+    expect(migrated.legalCompanyName).toBe('RapidCrew Solutions Private Limited');
+    expect(migrated.signatoryName).toBe('Sumeet Singh');
+    expect(migrated.signatoryDesignation).toBe('HR Executive');
+    expect(migrated.stampDataUrl).toBe(legacy.stampDataUrl);
   });
 
   it('keeps a custom company identity while only filling missing letterhead contact fields', () => {
@@ -51,6 +61,13 @@ describe('browser data migration', () => {
     const migrated = migrateTemplateRecord(template);
     expect(migrated.bodyHtml).toBe('<p>Keep me</p>');
     expect(migrated.includeStampByDefault).toBe(true);
+  });
+
+  it('turns salary stamp on for legacy salary documents and templates', () => {
+    const salaryTemplate = { id: 'salary', type: 'salary-slip', name: 'Salary', bodyHtml: '<p>Salary</p>', isDefault: true, includeStampByDefault: false, createdAt: '', updatedAt: '' } as TemplateData;
+    expect(migrateTemplateRecord(salaryTemplate).includeStampByDefault).toBe(true);
+    const salaryDoc = { id: 's', type: 'salary-slip', employeeId: 'e', templateId: 'salary', documentDate: '2026-09-18', includeStamp: false, createdAt: '', updatedAt: '' } as DocumentData;
+    expect(migrateDocumentRecord(salaryDoc).includeStamp).toBe(true);
   });
 
   it('turns stamp on for old saved documents only when the field was missing', () => {
