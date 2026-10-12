@@ -3,6 +3,7 @@ import type { CompanyData, DocumentData, EmployeeData, TemplateData } from '@/li
 import { placeholderMap, renderPlaceholders } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { buildSalarySlipView } from '@/lib/salary-slip';
+import { buildAuthorizationView } from '@/lib/authorization';
 import { DocumentAuthorizationBlock } from './DocumentAuthorizationBlock';
 import { DocumentLetterhead } from './DocumentLetterhead';
 
@@ -47,6 +48,13 @@ function SalaryPreview({company,employee,doc}:{company?:CompanyData;employee?:Em
 
     <div className="salary-net-row"><strong>Net Pay Amount</strong><strong>{view.netAmount}</strong></div>
     <div className="salary-words-row"><strong>Net Pay Amount (in words)</strong><span>{view.amountInWords}</span></div>
+    <SalaryStamp company={company} doc={doc}/>
     <div className="salary-system-footer">{view.systemFooter}</div>
   </div>;
+}
+
+function SalaryStamp({company,doc}:{company:CompanyData;doc:DocumentData}){
+  const view=buildAuthorizationView(company,doc);
+  if(!view.showStamp||!view.stampDataUrl)return null;
+  return <div className="salary-stamp-block"><img src={view.stampDataUrl} alt="Official company stamp" className="salary-stamp-image" style={{width:view.stampWidth}}/></div>;
 }

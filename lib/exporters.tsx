@@ -28,7 +28,20 @@ import { buildAuthorizationView } from './authorization';
 import { LETTERHEAD, LETTERHEAD_MARK_DATA_URL, LETTERHEAD_WATERMARK_DATA_URL, LETTERHEAD_WORDMARK_DATA_URL } from './letterhead';
 import { getLetterheadDetails } from './letterhead-details';
 
-function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/p>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\n{3,}/g,'\n\n').trim(); }
+function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\n{3,}/g,'\n\n').trim(); }
+type ExportBlock={text:string;kind:'heading'|'paragraph';align:'left'|'center'|'right'|'justify'};
+function htmlBlocks(html:string):ExportBlock[]{
+  const blocks:ExportBlock[]=[];
+  const re=/<(h[1-6]|p|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+  for(const match of html.matchAll(re)){
+    const tag=match[1].toLowerCase(); const attrs=match[2]||''; const text=stripHtml(match[3]);
+    if(!text)continue;
+    const styleAlign=(attrs.match(/text-align\s*:\s*(left|center|right|justify)/i)?.[1]?.toLowerCase()||'') as ExportBlock['align']|'';
+    blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify')});
+  }
+  if(blocks.length)return blocks;
+  return stripHtml(html).split(/\n+/).filter(Boolean).map(text=>({text,kind:'paragraph' as const,align:'justify' as const}));
+}
 function dataUrlBytes(dataUrl?:string){ if(!dataUrl) return undefined; const base64=dataUrl.split(',')[1]; if(!base64) return undefined; return Uint8Array.from(atob(base64), c=>c.charCodeAt(0)); }
 function loadBrowserImage(dataUrl:string){ return new Promise<HTMLImageElement>((resolve,reject)=>{const image=new window.Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Invalid image'));image.src=dataUrl;}); }
 async function normalizeExportImage(dataUrl?:string){
@@ -64,6 +77,7 @@ const PDF_WATERMARK_HEIGHT=PDF_WATERMARK_WIDTH/LETTERHEAD.watermarkAspectRatio;
 const styles=StyleSheet.create({
   page:{ paddingTop:100,paddingBottom:78,paddingHorizontal:48,fontSize:10.5,fontFamily:'Helvetica',lineHeight:1.55,color:'#111' },
   p:{ marginBottom:8,textAlign:'justify' },
+  heading:{ marginBottom:10,textAlign:'center',fontSize:12,fontWeight:700 },
   letterheadLogo:{ position:'absolute',top:30,left:48,width:142,height:41,objectFit:'contain' },
   letterheadWatermark:{ position:'absolute',top:(PDF_A4_HEIGHT-PDF_WATERMARK_HEIGHT)/2,left:(PDF_A4_WIDTH-PDF_WATERMARK_WIDTH)/2,width:PDF_WATERMARK_WIDTH,height:PDF_WATERMARK_HEIGHT,objectFit:'contain',opacity:LETTERHEAD.watermarkOpacity },
   letterheadFooter:{ position:'absolute',bottom:18,left:28,right:28,fontSize:7.8,fontFamily:'Helvetica',color:'#30343a' },
@@ -140,15 +154,16 @@ function PdfSalary({company,employee,doc}:{company:CompanyData;employee:Employee
     </View>
     <View style={styles.salaryNet}><Text>Net Pay Amount</Text><Text>{view.netAmount}</Text></View>
     <View style={styles.salaryWords}><Text style={styles.salaryWordsLabel}>Net Pay Amount (in words)</Text><Text style={styles.salaryWordsValue}>{view.amountInWords}</Text></View>
+    {(()=>{const auth=buildAuthorizationView(company,doc);return auth.showStamp&&auth.stampDataUrl?<View wrap={false} style={[styles.authLeft,{marginTop:10}]}><Image src={auth.stampDataUrl} style={[styles.authStamp,{width:Math.min(100,Math.max(45,auth.stampWidth*0.72))}]}/></View>:null})()}
     <Text style={styles.salarySystemFooter}>{view.systemFooter}</Text>
   </Page>;
 }
 
 function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee:EmployeeData;doc:DocumentData;template:TemplateData}){
-  const values=placeholderMap(company,employee,doc); const text=stripHtml(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values));
+  const values=placeholderMap(company,employee,doc); const blocks=htmlBlocks(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values));
   return <Page size="A4" style={styles.page} wrap>
     <PdfLetterhead company={company}/>
-    {text.split(/\n+/).filter(Boolean).map((p,i)=><Text key={i} style={styles.p}>{p}</Text>)}
+    {blocks.map((block,i)=><Text key={i} style={block.kind==='heading'?[styles.heading,{textAlign:block.align}]:[styles.p,{textAlign:block.align}]}>{block.text}</Text>)}
     <PdfAuthorization company={company} doc={doc}/>
   </Page>;
 }
@@ -210,7 +225,7 @@ async function appendDocxAuthorization(children:(Paragraph|Table)[],company:Comp
 }
 
 export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc:DocumentData,template:TemplateData){
-  const values=placeholderMap(company,employee,doc); const body=stripHtml(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values)); const children:(Paragraph|Table)[]=[];
+  const values=placeholderMap(company,employee,doc); const blocks=htmlBlocks(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values)); const children:(Paragraph|Table)[]=[];
   if(doc.type==='salary-slip'){
     const view=buildSalarySlipView(company,employee,doc); const rowCount=Math.max(view.earnings.length,view.deductions.length,1);
     children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.companyName,bold:true,size:26})]}));
@@ -222,9 +237,15 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
     children.push(new Paragraph({text:'',spacing:{after:70}}));
     children.push(new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:tableBorders,rows:salaryRows}));
     children.push(new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:tableBorders,rows:[new TableRow({children:[docxCell('Net Pay Amount',{bold:true,width:70}),docxCell(view.netAmount,{bold:true,align:AlignmentType.RIGHT,width:30})]}),new TableRow({children:[docxCell('Net Pay Amount (in words)',{bold:true,width:34}),docxCell(view.amountInWords,{width:66})]})]}));
-    children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.systemFooter,bold:true,size:16})],spacing:{before:160}}));
+    const salaryAuth=buildAuthorizationView(company,doc);
+    if(salaryAuth.showStamp&&salaryAuth.stampDataUrl){const stamp=await makeDocxImageRun(salaryAuth.stampDataUrl,Math.min(140,Math.max(60,salaryAuth.stampWidth)),Math.min(140,Math.max(60,salaryAuth.stampWidth)));if(stamp)children.push(new Paragraph({alignment:AlignmentType.LEFT,children:[stamp],spacing:{before:140}}));}
+    children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.systemFooter,bold:true,size:16})],spacing:{before:100}}));
   } else {
-    body.split(/\n+/).filter(Boolean).forEach((p,i)=>children.push(new Paragraph({alignment:i===0?AlignmentType.RIGHT:AlignmentType.JUSTIFIED,children:[new TextRun({text:p,size:22})],spacing:{after:180}})));
+    blocks.forEach(block=>children.push(new Paragraph({
+      alignment:block.align==='center'?AlignmentType.CENTER:block.align==='right'?AlignmentType.RIGHT:block.align==='left'?AlignmentType.LEFT:AlignmentType.JUSTIFIED,
+      children:[new TextRun({text:block.text,size:block.kind==='heading'?24:22,bold:block.kind==='heading'})],
+      spacing:{after:block.kind==='heading'?200:180},
+    })));
     await appendDocxAuthorization(children,company,doc);
   }
   const {header,footer}=await buildDocxLetterhead(company);

@@ -2,7 +2,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { CompanyData, EmployeeData, HistoryData, TemplateData } from './types';
 import { defaultCompany, defaultTemplates } from './defaults';
-import { migrateAuthorizationAlignmentRecord, migrateCompanyRecord, migrateHistoryRecord, migrateLetterheadCompanyRecord, migrateTemplateRecord } from './migrations';
+import { migrateAuthorizationAlignmentRecord, migrateCompanyRecord, migrateHistoryRecord, migrateLetterheadCompanyRecord, migrateRapidcrewDefaultsV5, migrateTemplateRecord } from './migrations';
 
 class RapidcrewDB extends Dexie {
   company!: Table<CompanyData, string>;
@@ -29,6 +29,11 @@ class RapidcrewDB extends Dexie {
     });
     this.version(4).stores(stores).upgrade(async (tx) => {
       await tx.table('company').toCollection().modify((record: CompanyData) => Object.assign(record, migrateAuthorizationAlignmentRecord(record)));
+    });
+    this.version(5).stores(stores).upgrade(async (tx) => {
+      await tx.table('company').toCollection().modify((record: CompanyData) => Object.assign(record, migrateRapidcrewDefaultsV5(record)));
+      await tx.table('templates').toCollection().modify((record: TemplateData) => Object.assign(record, migrateTemplateRecord(record)));
+      await tx.table('history').toCollection().modify((record: HistoryData) => Object.assign(record, migrateHistoryRecord(record)));
     });
   }
 }
