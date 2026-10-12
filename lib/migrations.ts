@@ -48,14 +48,14 @@ export function migrateAuthorizationAlignmentRecord(company: CompanyData): Compa
 export function migrateTemplateRecord(template: TemplateData): TemplateData {
   return {
     ...template,
-    includeStampByDefault: template.includeStampByDefault ?? true,
+    includeStampByDefault: template.type === 'salary-slip' ? true : (template.includeStampByDefault ?? true),
   };
 }
 
 export function migrateDocumentRecord(document: DocumentData): DocumentData {
   return {
     ...document,
-    includeStamp: document.includeStamp ?? true,
+    includeStamp: document.type === 'salary-slip' ? true : (document.includeStamp ?? true),
   };
 }
 
