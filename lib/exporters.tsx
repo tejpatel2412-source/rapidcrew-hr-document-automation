@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Document, Page, Text, View, Image, StyleSheet, pdf } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet, Svg, Path, pdf } from '@react-pdf/renderer';
 import {
   AlignmentType,
   BorderStyle,
@@ -99,7 +99,9 @@ const styles=StyleSheet.create({
   salaryHeadCellAmount:{ width:'16%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'center',backgroundColor:'#f2f2f2' },
   salaryTotalLabel:{ width:'34%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,backgroundColor:'#fafafa' },
   salaryTotalAmount:{ width:'16%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'right',backgroundColor:'#fafafa' },
-  salaryNet:{ flexDirection:'row',justifyContent:'space-between',paddingVertical:5,paddingHorizontal:5,borderLeftWidth:0.7,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontSize:9.5,fontWeight:700 },
+  salaryNet:{ flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:5,paddingHorizontal:5,borderLeftWidth:0.7,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontSize:9.5,fontWeight:700 },
+  salaryMoney:{ flexDirection:'row',alignItems:'center',justifyContent:'flex-end' },
+  rupeeIcon:{ width:7.5,height:10,marginRight:1.5 },
   salaryWords:{ flexDirection:'row',paddingVertical:5,paddingHorizontal:5,borderLeftWidth:0.7,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
   salaryWordsLabel:{ width:'34%',fontWeight:700 }, salaryWordsValue:{ width:'66%' },
   salarySystemFooter:{ marginTop:10,textAlign:'center',fontSize:7.4,fontWeight:700 },
@@ -141,6 +143,16 @@ function PdfAuthorization({company,doc,compact=false}:{company:CompanyData;doc:D
   </View>;
 }
 
+function PdfMoney({currencyCode,currencySymbol,amountValue,formatted}:{currencyCode:string;currencySymbol:string;amountValue:string;formatted:string}){
+  if(currencyCode!=='INR') return <Text>{formatted}</Text>;
+  return <View style={styles.salaryMoney}>
+    <Svg viewBox="0 0 10 14" style={styles.rupeeIcon}>
+      <Path d="M1 1.5 H9 M1 4.2 H9 M2 1.5 H5.4 C7.1 1.5 8 2.4 8 3.6 C8 5.0 6.8 5.8 4.5 5.8 H2.2 M4.4 5.8 L8.5 12" stroke="#111111" strokeWidth={1.25} fill="none"/>
+    </Svg>
+    <Text>{amountValue}</Text>
+  </View>;
+}
+
 function PdfSalary({company,employee,doc}:{company:CompanyData;employee:EmployeeData;doc:DocumentData}){
   const view=buildSalarySlipView(company,employee,doc); const rowCount=Math.max(view.earnings.length,view.deductions.length,1);
   return <Page size="A4" style={styles.salaryPage} wrap>
@@ -148,11 +160,11 @@ function PdfSalary({company,employee,doc}:{company:CompanyData;employee:Employee
     <View style={styles.salaryHead}><Text style={styles.salaryCompany}>{view.companyName}</Text><Text style={styles.salaryTitle}>{view.title}</Text></View>
     <View style={styles.salaryTable}>{view.employeeRows.map((r,i)=><View style={styles.salaryRow} key={i}><Text style={styles.salaryLabel}>{r[0]}</Text><Text style={styles.salaryValue}>{r[1]}</Text><Text style={styles.salaryLabel}>{r[2]}</Text><Text style={styles.salaryValue}>{r[3]}</Text></View>)}</View>
     <View style={[styles.salaryTable,{marginTop:8}]}>
-      <View style={styles.salaryRow}><Text style={styles.salaryHeadCellLabel}>Earnings</Text><Text style={styles.salaryHeadCellAmount}>Amount INR</Text><Text style={styles.salaryHeadCellLabel}>Deductions</Text><Text style={styles.salaryHeadCellAmount}>Amount INR</Text></View>
+      <View style={styles.salaryRow}><Text style={styles.salaryHeadCellLabel}>Earnings</Text><Text style={styles.salaryHeadCellAmount}>{view.amountColumnTitle}</Text><Text style={styles.salaryHeadCellLabel}>Deductions</Text><Text style={styles.salaryHeadCellAmount}>{view.amountColumnTitle}</Text></View>
       {Array.from({length:rowCount},(_,i)=>{const e=view.earnings[i];const d=view.deductions[i];return <View style={styles.salaryRow} key={i}><Text style={styles.salaryEarnLabel}>{e?.label||''}</Text><Text style={styles.salaryAmount}>{e?.amount||''}</Text><Text style={styles.salaryEarnLabel}>{d?.label||''}</Text><Text style={styles.salaryAmount}>{d?.amount||''}</Text></View>})}
       <View style={styles.salaryRow}><Text style={styles.salaryTotalLabel}>Gross Earnings</Text><Text style={styles.salaryTotalAmount}>{view.grossAmount}</Text><Text style={styles.salaryTotalLabel}>Total Deductions</Text><Text style={styles.salaryTotalAmount}>{view.deductionAmount}</Text></View>
     </View>
-    <View style={styles.salaryNet}><Text>Net Pay Amount</Text><Text>{view.netAmount}</Text></View>
+    <View style={styles.salaryNet}><Text>Net Pay Amount</Text><PdfMoney currencyCode={view.currencyCode} currencySymbol={view.currencySymbol} amountValue={view.netAmountValue} formatted={view.netAmount}/></View>
     <View style={styles.salaryWords}><Text style={styles.salaryWordsLabel}>Net Pay Amount (in words)</Text><Text style={styles.salaryWordsValue}>{view.amountInWords}</Text></View>
     {(()=>{const auth=buildAuthorizationView(company,doc);return auth.showStamp&&auth.stampDataUrl?<View wrap={false} style={[styles.authLeft,{marginTop:10}]}><Image src={auth.stampDataUrl} style={[styles.authStamp,{width:Math.min(100,Math.max(45,auth.stampWidth*0.72))}]}/></View>:null})()}
     <Text style={styles.salarySystemFooter}>{view.systemFooter}</Text>
@@ -231,7 +243,7 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
     children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.companyName,bold:true,size:26})]}));
     children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.title,bold:true,size:20})],spacing:{after:110}}));
     children.push(new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:tableBorders,rows:view.employeeRows.map(employeeDocxRow)}));
-    const salaryRows=[new TableRow({children:[docxCell('Earnings',{bold:true,align:AlignmentType.CENTER,width:34}),docxCell('Amount INR',{bold:true,align:AlignmentType.CENTER,width:16}),docxCell('Deductions',{bold:true,align:AlignmentType.CENTER,width:34}),docxCell('Amount INR',{bold:true,align:AlignmentType.CENTER,width:16})]})];
+    const salaryRows=[new TableRow({children:[docxCell('Earnings',{bold:true,align:AlignmentType.CENTER,width:34}),docxCell(view.amountColumnTitle,{bold:true,align:AlignmentType.CENTER,width:16}),docxCell('Deductions',{bold:true,align:AlignmentType.CENTER,width:34}),docxCell(view.amountColumnTitle,{bold:true,align:AlignmentType.CENTER,width:16})]})];
     for(let i=0;i<rowCount;i++){const e=view.earnings[i];const d=view.deductions[i];salaryRows.push(new TableRow({children:[docxCell(e?.label||'',{width:34}),docxCell(e?.amount||'',{align:AlignmentType.RIGHT,width:16}),docxCell(d?.label||'',{width:34}),docxCell(d?.amount||'',{align:AlignmentType.RIGHT,width:16})]}));}
     salaryRows.push(new TableRow({children:[docxCell('Gross Earnings',{bold:true,width:34}),docxCell(view.grossAmount,{bold:true,align:AlignmentType.RIGHT,width:16}),docxCell('Total Deductions',{bold:true,width:34}),docxCell(view.deductionAmount,{bold:true,align:AlignmentType.RIGHT,width:16})]}));
     children.push(new Paragraph({text:'',spacing:{after:70}}));

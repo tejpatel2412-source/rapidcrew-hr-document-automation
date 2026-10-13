@@ -16,6 +16,13 @@ function amount(minor: bigint) {
   return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(minor) / 100);
 }
 
+function currencySymbol(currency:string) {
+  if(currency==='INR') return '₹';
+  return new Intl.NumberFormat('en-IN',{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2})
+    .formatToParts(0)
+    .find(part=>part.type==='currency')?.value || currency;
+}
+
 function salaryValue(salary: SalaryComponents | undefined, key: keyof SalaryComponents) {
   return salary?.[key] || '0';
 }
@@ -50,9 +57,13 @@ export function buildSalarySlipView(company: CompanyData, employee: EmployeeData
     row('Other Deduction', salaryValue(salary, 'otherDeduction')),
   ].filter(item => item.minor !== 0n);
   const totals = salaryTotals(salary);
+  const currencyCode=company.currency || 'INR';
   return {
     companyName: company.companyName || '',
     title: `Pay Slip for the Month ${doc.salaryMonth || ''} ${doc.salaryYear || ''}`.trim(),
+    currencyCode,
+    currencySymbol: currencySymbol(currencyCode),
+    amountColumnTitle: `Amount ${currencyCode}`,
     employeeRows: [
       ['Emp Code', employee.employeeId || '', 'Emp Name', employee.fullName || ''],
       ['Designation', employee.designation || '', 'DOJ', ddmmyyyy(employee.joiningDate)],
@@ -66,8 +77,9 @@ export function buildSalarySlipView(company: CompanyData, employee: EmployeeData
     totals,
     grossAmount: amount(totals.gross),
     deductionAmount: amount(totals.deductions),
-    netAmount: money(totals.net, company.currency || 'INR'),
-    amountInWords: amountInWords(totals.net, company.currency || 'INR'),
+    netAmountValue: amount(totals.net),
+    netAmount: money(totals.net, currencyCode),
+    amountInWords: amountInWords(totals.net, currencyCode),
     systemFooter: SALARY_SYSTEM_FOOTER,
   };
 }

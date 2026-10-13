@@ -38,7 +38,7 @@ function SalaryPreview({company,employee,doc}:{company?:CompanyData;employee?:Em
       {view.employeeRows.map((r,i)=><tr key={i}><th>{r[0]}</th><td>{r[1]}</td><th>{r[2]}</th><td>{r[3]}</td></tr>)}
     </tbody></table>
 
-    <table className="salary-amount-table" aria-label="Earnings and deductions"><thead><tr><th>Earnings</th><th className="salary-number">Amount INR</th><th>Deductions</th><th className="salary-number">Amount INR</th></tr></thead><tbody>
+    <table className="salary-amount-table" aria-label="Earnings and deductions"><thead><tr><th>Earnings</th><th className="salary-number">{view.amountColumnTitle}</th><th>Deductions</th><th className="salary-number">{view.amountColumnTitle}</th></tr></thead><tbody>
       {Array.from({length:rowCount},(_,i)=>{
         const earning=view.earnings[i]; const deduction=view.deductions[i];
         return <tr key={i}><td>{earning?.label||''}</td><td className="salary-number">{earning?.amount||''}</td><td>{deduction?.label||''}</td><td className="salary-number">{deduction?.amount||''}</td></tr>;

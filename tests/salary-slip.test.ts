@@ -46,6 +46,11 @@ describe('salary slip view model', () => {
     expect(view.totals.deductions).toBe(0n);
     expect(view.totals.net).toBe(7000000n);
     expect(view.amountInWords).toBe('Rupees Seventy Thousand Only');
+    expect(view.currencyCode).toBe('INR');
+    expect(view.currencySymbol).toBe('₹');
+    expect(view.amountColumnTitle).toBe('Amount INR');
+    expect(view.netAmountValue).toBe('70,000.00');
+    expect(view.netAmount).toBe('₹70,000.00');
     expect(view.systemFooter).toBe('This is a system-generated payslip.');
   });
 
