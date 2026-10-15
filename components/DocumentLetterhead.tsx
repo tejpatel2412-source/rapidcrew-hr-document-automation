@@ -1,14 +1,14 @@
 'use client';
 
 import type { CompanyData } from '@/lib/types';
-import { LETTERHEAD, LETTERHEAD_WORDMARK_DATA_URL } from '@/lib/letterhead';
+import { LETTERHEAD, documentLogoDataUrl } from '@/lib/letterhead';
 import { getLetterheadDetails } from '@/lib/letterhead-details';
 
 export function DocumentLetterhead({ company }: { company?: CompanyData }) {
   const details = getLetterheadDetails(company);
   return <>
     <div className="letterhead-top" aria-hidden="true">
-      <img src={company?.logoDataUrl || LETTERHEAD_WORDMARK_DATA_URL} alt="" />
+      <img src={documentLogoDataUrl(company)} alt="" />
     </div>
     <div className="letterhead-watermarks" aria-hidden="true">
       {Array.from({ length: LETTERHEAD.watermarkPreviewPages }, (_, index) => (
