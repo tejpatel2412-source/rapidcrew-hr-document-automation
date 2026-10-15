@@ -5,8 +5,8 @@ const PASSWORD = 'Buzzinga@0';
 test('unauthenticated root redirects to access screen', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/access$/);
-  await expect(page.getByText('RAPIDCREW').first()).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'HR DOCUMENT AUTOMATION' })).toBeVisible();
+  await expect(page.getByText('RAPIDCREW PVT LTD').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'HR CRM' })).toBeVisible();
   await expect(page.getByLabel('Enter Access Password')).toBeVisible();
 });
 
