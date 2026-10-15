@@ -82,7 +82,7 @@ const styles=StyleSheet.create({
   letterheadWatermark:{ position:'absolute',top:(PDF_A4_HEIGHT-PDF_WATERMARK_HEIGHT)/2,left:(PDF_A4_WIDTH-PDF_WATERMARK_WIDTH)/2,width:PDF_WATERMARK_WIDTH,height:PDF_WATERMARK_HEIGHT,objectFit:'contain',opacity:LETTERHEAD.watermarkOpacity },
   letterheadFooter:{ position:'absolute',bottom:18,left:28,right:28,fontSize:7.8,fontFamily:'Helvetica',color:'#30343a' },
   letterheadFooterRow:{ flexDirection:'row',alignItems:'flex-end' },
-  footerLeft:{ width:'30%',textAlign:'left',color:'#8f3445',fontWeight:700,textDecoration:'underline' },
+  footerLeft:{ width:'30%',textAlign:'left',color:LETTERHEAD.brandColor,fontWeight:700,textDecoration:'underline' },
   footerCenter:{ width:'45%',textAlign:'center',fontWeight:700 },
   footerRight:{ width:'25%',textAlign:'right',fontWeight:700 },
   footerAddress:{ marginTop:5,textAlign:'center',fontSize:7.4,fontWeight:700 },
@@ -214,7 +214,7 @@ async function buildDocxLetterhead(company:CompanyData){
   const header=new Header({children:headerChildren});
   const footer=new Footer({children:[
     new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:noTableBorders,rows:[new TableRow({children:[
-      new TableCell({width:{size:30,type:WidthType.PERCENTAGE},children:[new Paragraph({alignment:AlignmentType.LEFT,children:[new TextRun({text:details.website,bold:true,size:17,color:'8F3445',underline:{type:UnderlineType.SINGLE}})]})]}),
+      new TableCell({width:{size:30,type:WidthType.PERCENTAGE},children:[new Paragraph({alignment:AlignmentType.LEFT,children:[new TextRun({text:details.website,bold:true,size:17,color:LETTERHEAD.brandColor.replace('#',''),underline:{type:UnderlineType.SINGLE}})]})]}),
       new TableCell({width:{size:45,type:WidthType.PERCENTAGE},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:details.legalName,bold:true,size:17,color:'30343A'})]})]}),
       new TableCell({width:{size:25,type:WidthType.PERCENTAGE},children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:details.phone,bold:true,size:17,color:'30343A'})]})]}),
     ]})]}),
