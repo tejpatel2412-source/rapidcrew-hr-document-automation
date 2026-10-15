@@ -1,18 +1,20 @@
 'use client';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BrandSplash } from '@/components/BrandSplash';
 
 export default function AccessPage(){
   const router=useRouter();
   const [password,setPassword]=useState('');
   const [error,setError]=useState('');
   const [busy,setBusy]=useState(false);
+  const [granted,setGranted]=useState(false);
 
   async function submit(event:FormEvent){
     event.preventDefault(); setError(''); setBusy(true);
     try{
       const response=await fetch('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
-      if(response.ok){router.replace('/');router.refresh();return;}
+      if(response.ok){setGranted(true);window.setTimeout(()=>{router.replace('/');router.refresh();},900);return;}
       const data=await response.json().catch(()=>({}));
       setError(data.error || 'Incorrect password. Please try again.');
     }catch{
@@ -21,8 +23,9 @@ export default function AccessPage(){
   }
 
   return <main className="min-h-screen bg-[#f7f7f5] px-4 py-10 sm:py-16">
+    <BrandSplash visible={granted} mode="success"/>
     <div className="mx-auto w-full max-w-md">
-      <div className="mb-8 text-center"><div className="text-3xl font-black tracking-wide text-[#8B0000]">RAPIDCREW</div><h1 className="mt-2 text-sm font-bold tracking-[.2em] text-gray-600">HR DOCUMENT AUTOMATION</h1></div>
+      <div className="mb-8 text-center"><img src="/brand/rapidcrew-letterhead-wordmark.png" alt="Rapidcrew" className="mx-auto h-11 w-auto object-contain"/><div className="mt-3 text-lg font-black tracking-wide text-[#8B0000]">RAPIDCREW PVT LTD</div><h1 className="mt-1 text-sm font-bold tracking-[.22em] text-gray-600">HR CRM</h1></div>
       <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
         <label htmlFor="access-password" className="block text-sm font-semibold text-gray-800">Enter Access Password</label>
         <input id="access-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#8B0000]" required autoFocus/>
