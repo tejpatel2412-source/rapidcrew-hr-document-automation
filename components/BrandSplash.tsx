@@ -14,7 +14,7 @@ export function BrandSplash({
   return <div className="rapidcrew-splash no-print" role="status" aria-live="polite" aria-label={success ? 'Access granted to Rapidcrew PVT LTD HR CRM' : 'Rapidcrew PVT LTD HR CRM loading'}>
     <div className={`rapidcrew-splash-inner ${success ? 'rapidcrew-splash-success' : ''}`}>
       <div className="rapidcrew-splash-glow" />
-      <img src="/brand/rapidcrew-letterhead-wordmark.png" alt="Rapidcrew" className="rapidcrew-splash-logo" />
+      <div className="rapidcrew-splash-logo" role="img" aria-label="Rapidcrew" />
       <div className="rapidcrew-splash-title">RAPIDCREW PVT LTD</div>
       <div className="rapidcrew-splash-subtitle">{success ? 'ACCESS GRANTED' : 'HR CRM'}</div>
       <div className="rapidcrew-splash-line"><span /></div>
