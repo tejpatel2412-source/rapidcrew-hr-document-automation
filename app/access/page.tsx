@@ -26,7 +26,7 @@ export default function AccessPage(){
   return <main className="min-h-screen bg-[#f7f7f5] px-4 py-10 sm:py-16">
     <BrandSplash visible={granted} mode="success"/>
     <div className="mx-auto w-full max-w-md">
-      <div className="mb-8 text-center"><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="mx-auto h-14 w-auto max-w-[290px] object-contain"/><div className="mt-3 text-lg font-black tracking-wide brand-text">RAPIDCREW PVT LTD</div><h1 className="mt-1 text-sm font-bold tracking-[.22em] text-gray-600">HR CRM</h1></div>
+      <div className="mb-8 text-center"><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="mx-auto h-auto w-[260px] max-w-full object-contain"/><div className="mt-3 text-lg font-black tracking-wide brand-text">RAPIDCREW PVT LTD</div><h1 className="mt-1 text-sm font-bold tracking-[.22em] text-gray-600">HR CRM</h1></div>
       <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
         <label htmlFor="access-password" className="block text-sm font-semibold text-gray-800">Enter Access Password</label>
         <input id="access-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm brand-focus" required autoFocus/>
