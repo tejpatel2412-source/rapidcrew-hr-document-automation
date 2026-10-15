@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Rapidcrew HR Document Automation',
-  description: 'Local-first HR document automation for salary slips and employment letters.',
+  title: 'Rapidcrew PVT LTD HR CRM',
+  description: 'Rapidcrew PVT LTD HR CRM for salary slips and employment letters.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
