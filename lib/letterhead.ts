@@ -3,7 +3,7 @@ export const LETTERHEAD = {
   legalName: 'RapidCrew Solutions Private Limited',
   phone: '+91 (972) 525-7676',
   address: 'Office No,1222-1223, Zion Z One Building, Sindhu Bhavan Marg, Near Avalon Hotel - 380054',
-  brandColor: '#FB0303',
+  brandColor: '#640000',
   wordmarkSrc: '/brand/rapidcrew-letterhead-wordmark.png',
   markSrc: '/brand/rapidcrew-letterhead-mark.png',
   watermarkSrc: '/brand/rapidcrew-letterhead-watermark.png',
