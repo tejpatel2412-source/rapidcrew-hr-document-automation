@@ -4,6 +4,7 @@
 
 :root { color-scheme: light; --rapidcrew-brand:#AF0202; --rapidcrew-brand-dark:#850101; --rapidcrew-brand-soft:#FFF1F1; --rapidcrew-brand-border:#E7B8B8; }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 html, body { margin: 0; padding: 0; background: #f7f7f5; color: #111111; }
 body { font-family: Inter, Arial, Helvetica, sans-serif; }
 button, input, select, textarea { font: inherit; }
@@ -265,4 +266,30 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .rapidcrew-splash-logo,
   .rapidcrew-splash-glow,
   .rapidcrew-splash-line span { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+
+/* CRM section transition: content only, never the sidebar/logo. */
+.crm-route-transition {
+  animation: crmRouteEnter .34s cubic-bezier(.22,1,.36,1) both;
+  will-change: transform, opacity, filter;
+}
+@keyframes crmRouteEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(.995);
+    filter: blur(2px);
+  }
+  55% {
+    opacity: .92;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .crm-route-transition { animation: none !important; }
 }

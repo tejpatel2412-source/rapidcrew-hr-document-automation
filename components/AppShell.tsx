@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Building2, FileClock, FilePlus2, LayoutDashboard, LockKeyhole, Menu, Settings, Users, Files, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InitialBrandSplash } from './BrandSplash';
 import { LETTERHEAD_WORDMARK_DATA_URL } from '@/lib/letterhead';
 
@@ -12,6 +12,10 @@ const items = [
 
 export function AppShell({children}:{children:React.ReactNode}){
   const path=usePathname(); const [open,setOpen]=useState(false);
+  useEffect(()=>{
+    const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:0,behavior:reducedMotion?'auto':'smooth'});
+  },[path]);
   async function lock(){try{await fetch('/api/lock',{method:'POST'});}finally{window.location.href='/access';}}
   return <div className="min-h-screen bg-[#f7f7f5]"><InitialBrandSplash/>
     <header className="no-print sticky top-0 z-40 flex h-16 items-center border-b border-gray-200 bg-white px-4 lg:hidden">
@@ -29,6 +33,6 @@ export function AppShell({children}:{children:React.ReactNode}){
       <button onClick={lock} className="absolute bottom-24 left-4 right-4 flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"><LockKeyhole size={15}/>LOCK</button>
       <div className="absolute bottom-4 left-4 right-4 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs leading-5 text-gray-600">Local-first mode<br/><span className="font-semibold text-green-700">HR data stays in this browser.</span></div>
     </aside>
-    <main className="print-shell lg:pl-64"><div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">{children}</div></main>
+    <main className="print-shell lg:pl-64"><div key={path} className="crm-route-transition mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">{children}</div></main>
   </div>
 }
