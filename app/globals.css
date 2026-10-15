@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; --rapidcrew-brand:#B30000; --rapidcrew-brand-dark:#7F0000; --rapidcrew-brand-soft:#FFF1F1; --rapidcrew-brand-border:#E9B3B3; }
+:root { color-scheme: light; --rapidcrew-brand:#FB0303; --rapidcrew-brand-dark:#D90202; --rapidcrew-brand-soft:#FFF0F0; --rapidcrew-brand-border:#FFD0D0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #f7f7f5; color: #111111; }
 body { font-family: Inter, Arial, Helvetica, sans-serif; }
@@ -182,7 +182,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   height: 240px;
   border-radius: 999px;
   transform: translate(-50%,-50%);
-  background: radial-gradient(circle, rgba(179,0,0,.13), rgba(179,0,0,0) 70%);
+  background: radial-gradient(circle, rgba(251,3,3,.13), rgba(251,3,3,0) 70%);
   animation: rapidcrewGlowPulse 1s ease-in-out infinite alternate;
 }
 .rapidcrew-splash-logo {
@@ -220,7 +220,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   margin: 16px auto 0;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(179,0,0,.13);
+  background: rgba(251,3,3,.13);
 }
 .rapidcrew-splash-line span {
   display: block;
@@ -230,8 +230,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background: var(--rapidcrew-brand);
   animation: rapidcrewLine 1s ease-in-out infinite;
 }
-.rapidcrew-splash-success .rapidcrew-splash-subtitle { color: #15803d; }
-.rapidcrew-splash-success .rapidcrew-splash-line span { background: #15803d; }
+.rapidcrew-splash-success .rapidcrew-splash-subtitle { color: var(--rapidcrew-brand); }
+.rapidcrew-splash-success .rapidcrew-splash-line span { background: var(--rapidcrew-brand); }
 @keyframes rapidcrewLogoPop {
   0% { opacity: 0; transform: scale(.82) translateY(10px); }
   65% { opacity: 1; transform: scale(1.04) translateY(0); }
