@@ -35,6 +35,8 @@ export function InitialBrandSplash() {
   useEffect(() => {
     const state = window as SplashWindow;
     if (state.__rapidcrewInitialSplashShown) return;
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (nav?.type !== 'reload') return;
     state.__rapidcrewInitialSplashShown = true;
     setVisible(true);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
