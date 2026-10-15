@@ -20,11 +20,11 @@ export function AppShell({children}:{children:React.ReactNode}){
   return <div className="min-h-screen bg-[#f7f7f5]"><InitialBrandSplash/>
     <header className="no-print sticky top-0 z-40 flex h-16 items-center border-b border-gray-200 bg-white px-4 lg:hidden">
       <button aria-label="Open navigation" onClick={()=>setOpen(true)} className="mr-3 rounded-md p-2 hover:bg-gray-100"><Menu size={20}/></button>
-      <div className="flex items-center gap-2"><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="h-auto w-[150px] max-w-full object-contain"/><div className="hidden sm:block"><div className="text-[9px] font-bold tracking-[.16em] brand-text">PVT LTD</div><div className="text-[9px] font-medium tracking-[.16em] text-gray-500">HR CRM</div></div></div><button onClick={lock} className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><LockKeyhole size={14}/>LOCK</button>
+      <div className="flex items-center gap-2"><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="h-auto w-[150px] max-w-full object-contain"/></div><button onClick={lock} className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><LockKeyhole size={14}/>LOCK</button>
     </header>
     <aside className={`no-print fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 bg-white p-4 transition-transform lg:translate-x-0 ${open?'translate-x-0':'-translate-x-full'}`}>
       <div className="mb-8 flex items-start justify-between">
-        <div><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="h-auto w-[178px] max-w-full object-contain"/><div className="mt-2 text-[10px] font-bold tracking-[.18em] brand-text">PVT LTD · HR CRM</div></div>
+        <div><img src={LETTERHEAD_WORDMARK_DATA_URL} alt="Rapidcrew" className="h-auto w-[178px] max-w-full object-contain"/></div>
         <button aria-label="Close navigation" className="rounded p-1 lg:hidden" onClick={()=>setOpen(false)}><X size={20}/></button>
       </div>
       <nav className="space-y-1">
