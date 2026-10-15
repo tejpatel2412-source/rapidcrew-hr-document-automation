@@ -8,7 +8,7 @@ export function DocumentLetterhead({ company }: { company?: CompanyData }) {
   const details = getLetterheadDetails(company);
   return <>
     <div className="letterhead-top" aria-hidden="true">
-      <img src={LETTERHEAD_WORDMARK_DATA_URL} alt="" />
+      <img src={company?.logoDataUrl || LETTERHEAD_WORDMARK_DATA_URL} alt="" />
     </div>
     <div className="letterhead-watermarks" aria-hidden="true">
       {Array.from({ length: LETTERHEAD.watermarkPreviewPages }, (_, index) => (
