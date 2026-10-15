@@ -25,7 +25,7 @@ import type { CompanyData, DocumentData, EmployeeData, TemplateData } from './ty
 import { placeholderMap, renderPlaceholders, safeFilename } from './utils';
 import { buildSalarySlipView, type SalarySlipPairRow } from './salary-slip';
 import { buildAuthorizationView } from './authorization';
-import { LETTERHEAD, LETTERHEAD_MARK_DATA_URL, LETTERHEAD_WATERMARK_DATA_URL, LETTERHEAD_WORDMARK_DATA_URL } from './letterhead';
+import { LETTERHEAD, LETTERHEAD_MARK_DATA_URL, LETTERHEAD_WATERMARK_DATA_URL, documentLogoDataUrl } from './letterhead';
 import { getLetterheadDetails } from './letterhead-details';
 
 function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\n{3,}/g,'\n\n').trim(); }
@@ -113,7 +113,7 @@ const styles=StyleSheet.create({
 
 function PdfLetterhead({company}:{company:CompanyData}){
   const details=getLetterheadDetails(company);
-  const topLogo=company.logoDataUrl || LETTERHEAD_WORDMARK_DATA_URL;
+  const topLogo=documentLogoDataUrl(company);
   return <>
     <Image fixed src={topLogo} style={styles.letterheadLogo}/>
     <Image fixed src={LETTERHEAD_MARK_DATA_URL} style={styles.letterheadWatermark}/>
@@ -207,7 +207,7 @@ function docxAlignment(value:CompanyData['stampAlignment']){ return value==='lef
 
 async function buildDocxLetterhead(company:CompanyData){
   const details=getLetterheadDetails(company);
-  const logo=await makeDocxImageRun(company.logoDataUrl || LETTERHEAD_WORDMARK_DATA_URL,145,44);
+  const logo=await makeDocxImageRun(documentLogoDataUrl(company),145,44);
   const watermark=await makeDocxWatermarkRun();
   const headerChildren:Paragraph[]=[new Paragraph({alignment:AlignmentType.LEFT,children:logo?[logo]:[]})];
   if(watermark) headerChildren.push(new Paragraph({children:[watermark]}));
