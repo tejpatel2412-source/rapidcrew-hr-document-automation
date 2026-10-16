@@ -1,5 +1,5 @@
 export type Alignment = 'left' | 'center' | 'right' | 'justify';
-export type DocumentType = 'salary-slip' | 'offer-letter' | 'appointment-letter' | 'experience-letter' | 'relieving-letter';
+export type DocumentType = 'salary-slip' | 'offer-letter' | 'internship-offer-letter' | 'appointment-letter' | 'experience-letter' | 'relieving-letter';
 
 export interface CompanyData {
   id: 'company';
@@ -115,6 +115,10 @@ export interface DocumentData {
   relievingDate?: string;
   lastWorkingDate?: string;
   offerValidUntil?: string;
+  internshipStartDate?: string;
+  internshipEndDate?: string;
+  internshipDuration?: string;
+  stipend?: string;
   appointmentDate?: string;
   probationPeriod?: string;
   workingHours?: string;

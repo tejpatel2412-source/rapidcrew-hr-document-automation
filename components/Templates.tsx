@@ -9,7 +9,7 @@ import { defaultTemplates } from '@/lib/defaults';
 import { uid } from '@/lib/utils';
 import RichTextEditor from './RichTextEditor';
 
-const types:DocumentType[]=['salary-slip','offer-letter','appointment-letter','experience-letter','relieving-letter'];
+const types:DocumentType[]=['salary-slip','offer-letter','internship-offer-letter','appointment-letter','experience-letter','relieving-letter'];
 export default function Templates(){const [rows,setRows]=useState<TemplateData[]>([]);const [edit,setEdit]=useState<TemplateData|null>(null);const [toast,setToast]=useState('');const say=(m:string)=>{setToast(m);setTimeout(()=>setToast(''),2200)};async function load(){await ensureDefaults();setRows(await db.templates.toArray())}useEffect(()=>{load()},[]);
  async function save(){if(!edit?.name){say('Template name is required.');return;}if(edit.isDefault){const same=await db.templates.where('type').equals(edit.type).toArray();await db.templates.bulkPut(same.filter(x=>x.id!==edit.id).map(x=>({...x,isDefault:false})))}await db.templates.put({...edit,updatedAt:new Date().toISOString()});setEdit(null);await load();window.dispatchEvent(new CustomEvent('rapidcrew-data-changed',{detail:{scope:'templates'}}));say('Template saved')}
  async function duplicate(t:TemplateData){const n={...t,id:uid(),name:`${t.name} Copy`,isDefault:false,includeStampByDefault:true,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};await db.templates.put(n);await load();window.dispatchEvent(new CustomEvent('rapidcrew-data-changed',{detail:{scope:'templates'}}));say('Template duplicated')}

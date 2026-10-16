@@ -47,6 +47,10 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
   const fmt=(value?:string)=>formatDate(value,dateFormat);
   const probation=doc.probationPeriod?.trim() || '';
   const offerValidUntil=doc.offerValidUntil?.trim() || '';
+  const internshipStart=doc.internshipStartDate?.trim() || '';
+  const internshipEnd=doc.internshipEndDate?.trim() || '';
+  const internshipDuration=doc.internshipDuration?.trim() || '';
+  const stipend=doc.stipend?.trim() || '';
   const notice=doc.noticePeriod?.trim() || '';
   const resignation=doc.resignationDate?.trim() || '';
   const reference=doc.referenceNumber?.trim() || '';
@@ -67,6 +71,10 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
     resignation_date: fmt(doc.resignationDate),
     appointment_date: fmt(doc.appointmentDate || doc.documentDate),
     offer_valid_until: fmt(doc.offerValidUntil),
+    internship_start_date: fmt(doc.internshipStartDate || employee?.joiningDate),
+    internship_end_date: fmt(doc.internshipEndDate),
+    internship_duration: internshipDuration,
+    stipend,
     reference_number: reference,
     custom_remarks: doc.customRemarks || '',
     salary: employee?.basicSalary || '',
@@ -84,6 +92,9 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
     terms: doc.terms || '',
     probation_line: probation ? `Probation Period: ${probation}.` : '',
     offer_validity_line: offerValidUntil ? `This offer is valid until ${fmt(offerValidUntil)}.` : '',
+    internship_end_line: internshipEnd ? ` and is expected to conclude on ${fmt(internshipEnd)}` : '',
+    internship_duration_line: internshipDuration ? `Internship Duration: ${internshipDuration}.` : '',
+    stipend_line: stipend ? `Stipend: ${stipend}.` : '',
     notice_line: notice ? `Notice Period: ${notice}.` : '',
     resignation_line: resignation ? `Resignation Date: ${fmt(resignation)}.` : '',
     reference_line: reference ? `Reference No: ${reference}` : '',
