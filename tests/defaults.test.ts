@@ -23,7 +23,7 @@ describe('Rapidcrew defaults', () => {
 
   it('creates Rapidcrew-named defaults with company stamp enabled for every document type', () => {
     const templates = defaultTemplates();
-    expect(templates).toHaveLength(5);
+    expect(templates).toHaveLength(6);
     for (const template of templates) expect(template.name).toMatch(/^Rapidcrew /);
     for (const template of templates) expect(template.includeStampByDefault).toBe(true);
   });
@@ -32,6 +32,9 @@ describe('Rapidcrew defaults', () => {
     const templates = defaultTemplates();
     expect(templates.find(t=>t.type==='offer-letter')?.bodyHtml).toContain('{{offer_validity_line}}');
     expect(templates.find(t=>t.type==='offer-letter')?.bodyHtml).toContain('{{probation_line}}');
+    expect(templates.find(t=>t.type==='internship-offer-letter')?.name).toBe('Rapidcrew Internship Offer Letter');
+    expect(templates.find(t=>t.type==='internship-offer-letter')?.bodyHtml).toContain('{{internship_start_date}}');
+    expect(templates.find(t=>t.type==='internship-offer-letter')?.bodyHtml).toContain('{{stipend_line}}');
     expect(templates.find(t=>t.type==='appointment-letter')?.bodyHtml).toContain('{{notice_line}}');
     expect(templates.find(t=>t.type==='relieving-letter')?.bodyHtml).toContain('{{reference_line}}');
   });
