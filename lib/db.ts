@@ -43,5 +43,13 @@ export const db = new RapidcrewDB();
 export async function ensureDefaults() {
   if (typeof window === 'undefined') return;
   if ((await db.company.count()) === 0) await db.company.put({ ...defaultCompany, updatedAt: new Date().toISOString() });
-  if ((await db.templates.count()) === 0) await db.templates.bulkPut(defaultTemplates());
+  const defaults = defaultTemplates();
+  if ((await db.templates.count()) === 0) {
+    await db.templates.bulkPut(defaults);
+    return;
+  }
+  const existing = await db.templates.toArray();
+  const existingTypes = new Set(existing.map(template => template.type));
+  const missing = defaults.filter(template => !existingTypes.has(template.type));
+  if (missing.length) await db.templates.bulkPut(missing);
 }
