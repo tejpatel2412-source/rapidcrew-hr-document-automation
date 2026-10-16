@@ -71,7 +71,7 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
     resignation_date: fmt(doc.resignationDate),
     appointment_date: fmt(doc.appointmentDate || doc.documentDate),
     offer_valid_until: fmt(doc.offerValidUntil),
-    internship_start_date: fmt(doc.internshipStartDate),
+    internship_start_date: fmt(doc.internshipStartDate || employee?.joiningDate),
     internship_end_date: fmt(doc.internshipEndDate),
     internship_duration: internshipDuration,
     stipend,
