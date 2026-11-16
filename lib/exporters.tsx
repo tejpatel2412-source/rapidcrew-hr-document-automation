@@ -27,6 +27,7 @@ import { buildSalarySlipView, type SalarySlipPairRow } from './salary-slip';
 import { buildAuthorizationView } from './authorization';
 import { LETTERHEAD, LETTERHEAD_MARK_DATA_URL, LETTERHEAD_WATERMARK_DATA_URL, documentLogoDataUrl } from './letterhead';
 import { getLetterheadDetails } from './letterhead-details';
+import { docxLetterLayout, pdfLetterLayout } from './document-layout';
 
 function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\n{3,}/g,'\n\n').trim(); }
 type ExportBlock={text:string;kind:'heading'|'paragraph';align:'left'|'center'|'right'|'justify'};
@@ -75,9 +76,9 @@ const PDF_WATERMARK_WIDTH=PDF_A4_WIDTH*(LETTERHEAD.watermarkWidthPercent/100);
 const PDF_WATERMARK_HEIGHT=PDF_WATERMARK_WIDTH/LETTERHEAD.watermarkAspectRatio;
 
 const styles=StyleSheet.create({
-  page:{ paddingTop:100,paddingBottom:78,paddingHorizontal:48,fontSize:10.5,fontFamily:'Helvetica',lineHeight:1.55,color:'#111' },
-  p:{ marginBottom:8,textAlign:'justify' },
-  heading:{ marginBottom:10,textAlign:'center',fontSize:12,fontWeight:700 },
+  page:{ paddingTop:86,paddingBottom:68,paddingHorizontal:44,fontSize:9.15,fontFamily:'Helvetica',lineHeight:1.32,color:'#111' },
+  p:{ marginBottom:5,textAlign:'justify' },
+  heading:{ marginBottom:6,textAlign:'center',fontSize:10.8,fontWeight:700 },
   letterheadLogo:{ position:'absolute',top:30,left:48,width:142,height:41,objectFit:'contain' },
   letterheadWatermark:{ position:'absolute',top:(PDF_A4_HEIGHT-PDF_WATERMARK_HEIGHT)/2,left:(PDF_A4_WIDTH-PDF_WATERMARK_WIDTH)/2,width:PDF_WATERMARK_WIDTH,height:PDF_WATERMARK_HEIGHT,objectFit:'contain',opacity:LETTERHEAD.watermarkOpacity },
   letterheadFooter:{ position:'absolute',bottom:18,left:28,right:28,fontSize:7.8,fontFamily:'Helvetica',color:'#30343a' },
@@ -86,29 +87,29 @@ const styles=StyleSheet.create({
   footerCenter:{ width:'45%',textAlign:'center',fontWeight:700 },
   footerRight:{ width:'25%',textAlign:'right',fontWeight:700 },
   footerAddress:{ marginTop:5,textAlign:'center',fontSize:7.4,fontWeight:700 },
-  salaryPage:{ paddingTop:100,paddingBottom:78,paddingHorizontal:48,fontSize:8.8,fontFamily:'Helvetica',color:'#111' },
+  salaryPage:{ paddingTop:86,paddingBottom:66,paddingHorizontal:44,fontSize:8.5,fontFamily:'Helvetica',color:'#111' },
   salaryHead:{ alignItems:'center',justifyContent:'center',marginBottom:10 },
   salaryCompany:{ fontSize:12.5,fontWeight:700,textAlign:'center' },
   salaryTitle:{ marginTop:3,fontSize:9.5,fontWeight:700,textAlign:'center' },
   salaryTable:{ width:'100%',borderTopWidth:0.7,borderLeftWidth:0.7,borderColor:'#555' }, salaryRow:{ flexDirection:'row' },
-  salaryLabel:{ width:'18%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700 },
-  salaryValue:{ width:'32%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
-  salaryEarnLabel:{ width:'34%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
-  salaryAmount:{ width:'16%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',textAlign:'right' },
-  salaryHeadCellLabel:{ width:'34%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'center',backgroundColor:'#f2f2f2' },
-  salaryHeadCellAmount:{ width:'16%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'center',backgroundColor:'#f2f2f2' },
-  salaryTotalLabel:{ width:'34%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,backgroundColor:'#fafafa' },
-  salaryTotalAmount:{ width:'16%',paddingVertical:4,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'right',backgroundColor:'#fafafa' },
+  salaryLabel:{ width:'18%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700 },
+  salaryValue:{ width:'32%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
+  salaryEarnLabel:{ width:'34%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
+  salaryAmount:{ width:'16%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',textAlign:'right' },
+  salaryHeadCellLabel:{ width:'34%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'center',backgroundColor:'#f2f2f2' },
+  salaryHeadCellAmount:{ width:'16%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'center',backgroundColor:'#f2f2f2' },
+  salaryTotalLabel:{ width:'34%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,backgroundColor:'#fafafa' },
+  salaryTotalAmount:{ width:'16%',paddingVertical:3,paddingHorizontal:4,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontWeight:700,textAlign:'right',backgroundColor:'#fafafa' },
   salaryNet:{ flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:5,paddingHorizontal:5,borderLeftWidth:0.7,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555',fontSize:9.5,fontWeight:700 },
   salaryMoney:{ flexDirection:'row',alignItems:'center',justifyContent:'flex-end' },
   rupeeIcon:{ width:7.5,height:10,marginRight:1.5 },
   salaryWords:{ flexDirection:'row',paddingVertical:5,paddingHorizontal:5,borderLeftWidth:0.7,borderRightWidth:0.7,borderBottomWidth:0.7,borderColor:'#555' },
   salaryWordsLabel:{ width:'34%',fontWeight:700 }, salaryWordsValue:{ width:'66%' },
   salarySystemFooter:{ marginTop:10,textAlign:'center',fontSize:7.4,fontWeight:700 },
-  authBlock:{ marginTop:18 },
+  authBlock:{ marginTop:9 },
   authRight:{ alignItems:'flex-end' }, authCenter:{ alignItems:'center' }, authLeft:{ alignItems:'flex-start' },
-  authFor:{ fontSize:8.8,marginBottom:4 }, authName:{ fontSize:8.8,fontWeight:700,marginTop:3 }, authDesignation:{ fontSize:8,color:'#4b5563' },
-  authSignature:{ maxWidth:90,maxHeight:42,objectFit:'contain' }, authStamp:{ maxWidth:78,maxHeight:78,objectFit:'contain',marginTop:5 },
+  authFor:{ fontSize:8.2,marginBottom:3 }, authName:{ fontSize:8.2,fontWeight:700,marginTop:2 }, authDesignation:{ fontSize:7.6,color:'#4b5563' },
+  authSignature:{ maxWidth:82,maxHeight:36,objectFit:'contain' }, authStamp:{ maxWidth:68,maxHeight:68,objectFit:'contain',marginTop:3 },
 });
 
 function PdfLetterhead({company}:{company:CompanyData}){
@@ -155,7 +156,7 @@ function PdfMoney({currencyCode,currencySymbol,amountValue,formatted}:{currencyC
 
 function PdfSalary({company,employee,doc}:{company:CompanyData;employee:EmployeeData;doc:DocumentData}){
   const view=buildSalarySlipView(company,employee,doc); const rowCount=Math.max(view.earnings.length,view.deductions.length,1);
-  return <Page size="A4" style={styles.salaryPage} wrap>
+  return <Page size="A4" style={styles.salaryPage} wrap={false}>
     <PdfLetterhead company={company}/>
     <View style={styles.salaryHead}><Text style={styles.salaryCompany}>{view.companyName}</Text><Text style={styles.salaryTitle}>{view.title}</Text></View>
     <View style={styles.salaryTable}>{view.employeeRows.map((r,i)=><View style={styles.salaryRow} key={i}><Text style={styles.salaryLabel}>{r[0]}</Text><Text style={styles.salaryValue}>{r[1]}</Text><Text style={styles.salaryLabel}>{r[2]}</Text><Text style={styles.salaryValue}>{r[3]}</Text></View>)}</View>
@@ -172,11 +173,17 @@ function PdfSalary({company,employee,doc}:{company:CompanyData;employee:Employee
 }
 
 function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee:EmployeeData;doc:DocumentData;template:TemplateData}){
-  const values=placeholderMap(company,employee,doc); const blocks=htmlBlocks(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values));
-  return <Page size="A4" style={styles.page} wrap>
+  const values=placeholderMap(company,employee,doc);
+  const rendered=renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values);
+  const blocks=htmlBlocks(rendered);
+  const layout=pdfLetterLayout(rendered);
+  return <Page size="A4" style={[styles.page,{fontSize:layout.fontSize,lineHeight:layout.lineHeight}]} wrap={false}>
     <PdfLetterhead company={company}/>
-    {blocks.map((block,i)=><Text key={i} style={block.kind==='heading'?[styles.heading,{textAlign:block.align}]:[styles.p,{textAlign:block.align}]}>{block.text}</Text>)}
-    <PdfAuthorization company={company} doc={doc}/>
+    {blocks.map((block,i)=><Text key={i} style={block.kind==='heading'
+      ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
+      :[styles.p,{textAlign:block.align,marginBottom:layout.paragraphGap}]
+    }>{block.text}</Text>)}
+    <PdfAuthorization company={company} doc={doc} compact/>
   </Page>;
 }
 
@@ -227,17 +234,17 @@ async function appendDocxAuthorization(children:(Paragraph|Table)[],company:Comp
   const view=buildAuthorizationView(company,doc);
   const align=docxAlignment(view.stampAlignment);
   const sigAlign=docxAlignment(view.signatureAlignment);
-  const addStamp=async(keepNext:boolean)=>{if(view.showStamp){const image=await makeDocxImageRun(view.stampDataUrl,Math.min(140,Math.max(60,view.stampWidth)),Math.min(140,Math.max(60,view.stampWidth)));if(image)children.push(new Paragraph({alignment:align,keepNext,children:[image]}));}};
-  children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:`For ${view.companyName}`,size:compact?18:20})],spacing:{before:compact?180:300}}));
-  if(view.showSignature){const image=await makeDocxImageRun(view.signatureDataUrl,Math.min(150,Math.max(60,view.signatureWidth)),55);if(image)children.push(new Paragraph({alignment:sigAlign,keepNext:true,children:[image]}));}
+  const addStamp=async(keepNext:boolean)=>{if(view.showStamp){const image=await makeDocxImageRun(view.stampDataUrl,Math.min(compact?105:125,Math.max(55,view.stampWidth)),Math.min(compact?105:125,Math.max(55,view.stampWidth)));if(image)children.push(new Paragraph({alignment:align,keepNext,children:[image],spacing:{before:compact?20:50,after:0}}));}};
+  children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:`For ${view.companyName}`,size:compact?17:19})],spacing:{before:compact?100:180,after:20}}));
+  if(view.showSignature){const image=await makeDocxImageRun(view.signatureDataUrl,Math.min(compact?125:145,Math.max(55,view.signatureWidth)),compact?42:50);if(image)children.push(new Paragraph({alignment:sigAlign,keepNext:true,children:[image],spacing:{after:0}}));}
   if(compact&&!view.showSignature)await addStamp(true);
-  children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:view.signatoryName,bold:true,size:compact?18:20})]}));
-  if(view.signatoryDesignation)children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:view.signatoryDesignation,size:compact?17:18})]}));
+  children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:view.signatoryName,bold:true,size:compact?17:19})],spacing:{after:0}}));
+  if(view.signatoryDesignation)children.push(new Paragraph({alignment:align,keepNext:true,children:[new TextRun({text:view.signatoryDesignation,size:compact?16:18})],spacing:{after:0}}));
   if(!compact||view.showSignature)await addStamp(false);
 }
 
 export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc:DocumentData,template:TemplateData){
-  const values=placeholderMap(company,employee,doc); const blocks=htmlBlocks(renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values)); const children:(Paragraph|Table)[]=[];
+  const values=placeholderMap(company,employee,doc); const rendered=renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values); const blocks=htmlBlocks(rendered); const letterLayout=docxLetterLayout(rendered); const children:(Paragraph|Table)[]=[];
   if(doc.type==='salary-slip'){
     const view=buildSalarySlipView(company,employee,doc); const rowCount=Math.max(view.earnings.length,view.deductions.length,1);
     children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.companyName,bold:true,size:26})]}));
@@ -255,14 +262,15 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
   } else {
     blocks.forEach(block=>children.push(new Paragraph({
       alignment:block.align==='center'?AlignmentType.CENTER:block.align==='right'?AlignmentType.RIGHT:block.align==='left'?AlignmentType.LEFT:AlignmentType.JUSTIFIED,
-      children:[new TextRun({text:block.text,size:block.kind==='heading'?24:22,bold:block.kind==='heading'})],
-      spacing:{after:block.kind==='heading'?200:180},
+      children:[new TextRun({text:block.text,size:block.kind==='heading'?letterLayout.headingSize:letterLayout.bodySize,bold:block.kind==='heading'})],
+      spacing:{after:block.kind==='heading'?letterLayout.headingAfter:letterLayout.paragraphAfter,line:260},
+      keepLines:true,
     })));
-    await appendDocxAuthorization(children,company,doc);
+    await appendDocxAuthorization(children,company,doc,true);
   }
   const {header,footer}=await buildDocxLetterhead(company);
   const out=new DocxDocument({sections:[{
-    properties:{page:{size:{width:11906,height:16838},margin:{top:1360,bottom:1240,left:1021,right:1021,header:360,footer:360}}},
+    properties:{page:{size:{width:11906,height:16838},margin:{top:1120,bottom:960,left:950,right:950,header:300,footer:300}}},
     headers:{default:header},
     footers:{default:footer},
     children,
