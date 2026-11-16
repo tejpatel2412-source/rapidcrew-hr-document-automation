@@ -6,6 +6,7 @@ import { buildSalarySlipView } from '@/lib/salary-slip';
 import { buildAuthorizationView } from '@/lib/authorization';
 import { DocumentAuthorizationBlock } from './DocumentAuthorizationBlock';
 import { DocumentLetterhead } from './DocumentLetterhead';
+import { documentDensityFromHtml } from '@/lib/document-layout';
 
 export default function DocumentPreview({company,employee,doc,template}:{company?:CompanyData;employee?:EmployeeData;doc:DocumentData;template?:TemplateData}){
   const values=placeholderMap(company,employee,doc);
@@ -16,7 +17,8 @@ export default function DocumentPreview({company,employee,doc,template}:{company
       <div className="letterhead-content"><SalaryPreview company={company} employee={employee} doc={doc}/></div>
     </article></div>;
   }
-  return <div className="a4-wrap"><article id="official-document" className="a4-page letterhead-page document-body" style={{fontFamily:company?.fontFamily || 'Arial'}}>
+  const density=documentDensityFromHtml(body);
+  return <div className="a4-wrap"><article id="official-document" className={`a4-page letterhead-page document-body document-density-${density}`} style={{fontFamily:company?.fontFamily || 'Arial'}}>
     <DocumentLetterhead company={company}/>
     <div className="letterhead-content">
       <div dangerouslySetInnerHTML={{__html:body}}/>
