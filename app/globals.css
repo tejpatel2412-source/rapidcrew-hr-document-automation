@@ -12,7 +12,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .brand-text{color:var(--rapidcrew-brand)!important}.brand-bg{background:var(--rapidcrew-brand)!important}.brand-bg:hover{background:var(--rapidcrew-brand-dark)!important}.brand-soft{background:var(--rapidcrew-brand-soft)!important;color:var(--rapidcrew-brand)!important}.brand-card:hover{border-color:var(--rapidcrew-brand-border)!important}.brand-focus:focus{border-color:var(--rapidcrew-brand)!important;box-shadow:0 0 0 1px var(--rapidcrew-brand)!important}
 
 .a4-page { width: 210mm; min-height: 297mm; background: white; box-shadow: 0 8px 28px rgba(17,17,17,.12); padding: 20mm 18mm; margin: 0 auto; color: #111; }
-.document-body p { margin: 0 0 12px; line-height: 1.62; }
+.document-body { font-size: 12px; line-height: 1.38; }
+.document-body p { margin: 0 0 7px; line-height: 1.38; }
+.document-body h1, .document-body h2, .document-body h3 { margin: 0 0 8px; line-height: 1.2; }
+.document-body h1 { font-size: 16px; }
+.document-body h2 { font-size: 14px; }
+.document-body h3 { font-size: 13px; }
+.document-density-compact { font-size: 11.5px; }
+.document-density-compact p { margin-bottom: 6px; line-height: 1.34; }
+.document-density-tight { font-size: 10.5px; }
+.document-density-tight p { margin-bottom: 4px; line-height: 1.28; }
+.document-density-tight h1, .document-density-tight h2, .document-density-tight h3 { margin-bottom: 5px; }
 .document-body table { width: 100%; border-collapse: collapse; }
 .document-body th, .document-body td { border: 1px solid #d1d5db; padding: 7px 8px; }
 .document-body th { background: #f3f4f6; text-align: left; }
@@ -32,7 +42,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 
 /* Traditional payroll-style salary slip. Intentionally neutral and print-first. */
-.salary-slip-page { padding: 18mm 17mm; }
+.salary-slip-page { padding: 16mm 16mm; }
 .salary-slip-document { color: #111; font-size: 11px; }
 .salary-slip-head { display: grid; grid-template-columns: 24% 52% 24%; align-items: center; margin-bottom: 10px; min-height: 58px; }
 .salary-logo-box { width: 112px; height: 52px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #777; padding: 3px; }
@@ -42,7 +52,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .salary-period-title { margin-top: 4px; font-size: 12px; font-weight: 700; }
 .salary-head-spacer { min-height: 1px; }
 .salary-slip-document table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.salary-slip-document th, .salary-slip-document td { border: 1px solid #555; padding: 5px 6px; background: #fff; color: #111; vertical-align: middle; }
+.salary-slip-document th, .salary-slip-document td { border: 1px solid #555; padding: 4px 5px; background: #fff; color: #111; vertical-align: middle; }
 .salary-info-table th { width: 18%; text-align: left; font-weight: 700; }
 .salary-info-table td { width: 32%; text-align: left; }
 .salary-amount-table { margin-top: 9px; }
@@ -54,25 +64,25 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .salary-net-row { display: flex; justify-content: space-between; border: 1px solid #555; border-top: 0; padding: 7px 8px; font-size: 12px; }
 .salary-words-row { border: 1px solid #555; border-top: 0; padding: 7px 8px; display: grid; grid-template-columns: 34% 1fr; gap: 10px; }
 .salary-system-footer { margin-top: 12px; text-align: center; font-size: 9px; font-weight: 700; }
-.salary-stamp-block { margin-top: 14px; min-height: 72px; text-align: left; break-inside: avoid; page-break-inside: avoid; }
-.salary-stamp-image { display: inline-block; max-width: 130px; max-height: 92px; object-fit: contain; }
+.salary-stamp-block { margin-top: 9px; min-height: 58px; text-align: left; break-inside: avoid; page-break-inside: avoid; }
+.salary-stamp-image { display: inline-block; max-width: 110px; max-height: 74px; object-fit: contain; }
 .salary-empty-state { padding: 40px 16px; text-align: center; color: #6b7280; }
 
 @media print {
   .print-shell > div { max-width: none !important; padding: 0 !important; }
-  .salary-slip-page { padding: 18mm 17mm !important; }
+  .salary-slip-page { padding: 16mm 16mm !important; }
   .salary-slip-document th, .salary-slip-document td, .salary-net-row, .salary-words-row { border-color: #555 !important; }
   .salary-amount-table thead th, .salary-total-row th, .salary-total-row td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 /* Shared document authorization block used by applicable HR letters. */
-.authorization-block { margin-top: 34px; break-inside: avoid; page-break-inside: avoid; }
-.authorization-block-compact { margin-top: 18px; }
-.authorization-for { font-size: 12px; margin-bottom: 6px; }
-.authorization-signature { display: inline-block; max-height: 70px; object-fit: contain; }
-.authorization-name { margin-top: 4px; font-size: 12px; font-weight: 700; }
-.authorization-designation { font-size: 11px; color: #4b5563; }
-.authorization-stamp { display: inline-block; max-height: 100px; object-fit: contain; margin-top: 7px; }
+.authorization-block { margin-top: 16px; break-inside: avoid; page-break-inside: avoid; }
+.authorization-block-compact { margin-top: 10px; }
+.authorization-for { font-size: 11px; margin-bottom: 4px; }
+.authorization-signature { display: inline-block; max-height: 52px; object-fit: contain; }
+.authorization-name { margin-top: 2px; font-size: 11px; font-weight: 700; }
+.authorization-designation { font-size: 10px; color: #4b5563; }
+.authorization-stamp { display: inline-block; max-height: 78px; object-fit: contain; margin-top: 4px; }
 .salary-slip-document .authorization-block { font-size: 10px; }
 .salary-slip-document .authorization-stamp { max-height: 92px; }
 
@@ -84,7 +94,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .letterhead-page {
   position: relative;
   overflow: hidden;
-  padding: 34mm 18mm 29mm;
+  height: 297mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  padding: 30mm 17mm 25mm;
 }
 .letterhead-content { position: relative; z-index: 2; }
 .letterhead-top {
@@ -144,7 +157,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .letterhead-salary-head .salary-head-center { width: 100%; }
 
 @media print {
-  .letterhead-page { padding: 34mm 18mm 29mm !important; overflow: hidden !important; }
+  .letterhead-page { height: 297mm !important; min-height: 297mm !important; max-height: 297mm !important; padding: 30mm 17mm 25mm !important; overflow: hidden !important; }
   .letterhead-top, .letterhead-watermarks, .letterhead-watermark-page, .letterhead-footer {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
