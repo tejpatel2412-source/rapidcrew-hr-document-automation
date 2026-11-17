@@ -9,8 +9,9 @@ describe('PDF A4 output', () => {
     expect(source).toContain('const PDF_A4_WIDTH=595.28;');
     expect(source).toContain('const PDF_A4_HEIGHT=841.89;');
     expect(source).toContain('const PDF_A4_SIZE:[number,number]=[PDF_A4_WIDTH,PDF_A4_HEIGHT];');
+    expect(source).toContain('const PDF_OUTPUT_DPI=300;');
 
-    const pageMatches = source.match(/<Page size=\{PDF_A4_SIZE\} orientation="portrait"/g) || [];
+    const pageMatches = source.match(/<Page size=\{PDF_A4_SIZE\} orientation="portrait" dpi=\{PDF_OUTPUT_DPI\}/g) || [];
     expect(pageMatches.length).toBeGreaterThanOrEqual(2);
   });
 });
