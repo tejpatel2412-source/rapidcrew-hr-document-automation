@@ -77,7 +77,7 @@ const PDF_WATERMARK_WIDTH=PDF_A4_WIDTH*(LETTERHEAD.watermarkWidthPercent/100);
 const PDF_WATERMARK_HEIGHT=PDF_WATERMARK_WIDTH/LETTERHEAD.watermarkAspectRatio;
 
 const styles=StyleSheet.create({
-  page:{ paddingTop:86,paddingBottom:68,paddingHorizontal:44,fontSize:9.15,fontFamily:'Helvetica',lineHeight:1.32,color:'#111' },
+  page:{ width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT,minHeight:PDF_A4_HEIGHT,maxHeight:PDF_A4_HEIGHT,paddingTop:86,paddingBottom:68,paddingHorizontal:44,fontSize:9.15,fontFamily:'Helvetica',lineHeight:1.32,color:'#111' },
   p:{ marginBottom:5,textAlign:'justify' },
   heading:{ marginBottom:6,textAlign:'center',fontSize:10.8,fontWeight:700 },
   letterheadLogo:{ position:'absolute',top:30,left:48,width:142,height:41,objectFit:'contain' },
@@ -88,7 +88,7 @@ const styles=StyleSheet.create({
   footerCenter:{ width:'45%',textAlign:'center',fontWeight:700 },
   footerRight:{ width:'25%',textAlign:'right',fontWeight:700 },
   footerAddress:{ marginTop:5,textAlign:'center',fontSize:7.4,fontWeight:700 },
-  salaryPage:{ paddingTop:86,paddingBottom:66,paddingHorizontal:44,fontSize:8.5,fontFamily:'Helvetica',color:'#111' },
+  salaryPage:{ width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT,minHeight:PDF_A4_HEIGHT,maxHeight:PDF_A4_HEIGHT,paddingTop:86,paddingBottom:66,paddingHorizontal:44,fontSize:8.5,fontFamily:'Helvetica',color:'#111' },
   salaryHead:{ alignItems:'center',justifyContent:'center',marginBottom:10 },
   salaryCompany:{ fontSize:12.5,fontWeight:700,textAlign:'center' },
   salaryTitle:{ marginTop:3,fontSize:9.5,fontWeight:700,textAlign:'center' },
@@ -157,7 +157,7 @@ function PdfMoney({currencyCode,currencySymbol,amountValue,formatted}:{currencyC
 
 function PdfSalary({company,employee,doc}:{company:CompanyData;employee:EmployeeData;doc:DocumentData}){
   const view=buildSalarySlipView(company,employee,doc); const rowCount=Math.max(view.earnings.length,view.deductions.length,1);
-  return <Page size={PDF_A4_SIZE} orientation="portrait" style={styles.salaryPage} wrap={false}>
+  return <Page size={{width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT}} style={styles.salaryPage} wrap={false}>
     <PdfLetterhead company={company}/>
     <View style={styles.salaryHead}><Text style={styles.salaryCompany}>{view.companyName}</Text><Text style={styles.salaryTitle}>{view.title}</Text></View>
     <View style={styles.salaryTable}>{view.employeeRows.map((r,i)=><View style={styles.salaryRow} key={i}><Text style={styles.salaryLabel}>{r[0]}</Text><Text style={styles.salaryValue}>{r[1]}</Text><Text style={styles.salaryLabel}>{r[2]}</Text><Text style={styles.salaryValue}>{r[3]}</Text></View>)}</View>
@@ -178,7 +178,7 @@ function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee
   const rendered=renderPlaceholders(doc.customBodyHtml||template.bodyHtml,values);
   const blocks=htmlBlocks(rendered);
   const layout=pdfLetterLayout(rendered);
-  return <Page size={PDF_A4_SIZE} orientation="portrait" style={[styles.page,{fontSize:layout.fontSize,lineHeight:layout.lineHeight}]} wrap={false}>
+  return <Page size={{width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT}} style={[styles.page,{fontSize:layout.fontSize,lineHeight:layout.lineHeight}]} wrap={false}>
     <PdfLetterhead company={company}/>
     {blocks.map((block,i)=><Text key={i} style={block.kind==='heading'
       ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
