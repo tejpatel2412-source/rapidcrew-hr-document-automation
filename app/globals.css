@@ -11,7 +11,8 @@ button, input, select, textarea { font: inherit; }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [contenteditable]:focus-visible { outline: 2px solid var(--rapidcrew-brand); outline-offset: 2px; }
 .brand-text{color:var(--rapidcrew-brand)!important}.brand-bg{background:var(--rapidcrew-brand)!important}.brand-bg:hover{background:var(--rapidcrew-brand-dark)!important}.brand-soft{background:var(--rapidcrew-brand-soft)!important;color:var(--rapidcrew-brand)!important}.brand-card:hover{border-color:var(--rapidcrew-brand-border)!important}.brand-focus:focus{border-color:var(--rapidcrew-brand)!important;box-shadow:0 0 0 1px var(--rapidcrew-brand)!important}
 
-.a4-page { width: 210mm; min-height: 297mm; background: white; box-shadow: 0 8px 28px rgba(17,17,17,.12); padding: 20mm 18mm; margin: 0 auto; color: #111; }
+.a4-wrap { width: 210mm; min-height: 297mm; margin: 0 auto; }
+.a4-page { width: 210mm; height: 297mm; min-height: 297mm; max-height: 297mm; aspect-ratio: 210 / 297; flex: 0 0 auto; background: white; box-shadow: 0 8px 28px rgba(17,17,17,.12); padding: 20mm 18mm; margin: 0 auto; color: #111; }
 .document-body { font-size: 12px; line-height: 1.38; }
 .document-body p { margin: 0 0 7px; line-height: 1.38; }
 .document-body h1, .document-body h2, .document-body h3 { margin: 0 0 8px; line-height: 1.2; }
@@ -38,7 +39,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   body { background: white !important; }
   .no-print { display: none !important; }
   .print-shell { padding: 0 !important; margin: 0 !important; }
-  .a4-page { box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm !important; }
+  .a4-page { box-shadow: none !important; margin: 0 !important; width: 210mm !important; height: 297mm !important; min-height: 297mm !important; max-height: 297mm !important; aspect-ratio: 210 / 297 !important; }
 }
 
 /* Traditional payroll-style salary slip. Intentionally neutral and print-first. */
