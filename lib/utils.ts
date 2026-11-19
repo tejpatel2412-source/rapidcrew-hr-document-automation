@@ -106,6 +106,20 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
     amount_in_words: amountInWords(totals.net, company?.currency),
   } as Record<string,string>;
 }
-export function renderPlaceholders(html: string, values: Record<string,string>) { return html.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, k) => values[k] ?? `{{${k}}}`); }
+/**
+ * Recover one common rich-text editing typo: extra letters accidentally typed
+ * inside {{employee_name}}. This keeps the selected employee's real name and
+ * avoids blocking PDF/Word export for a malformed employee-name token.
+ * Other unknown variables (including employee_name_suffix) still block export.
+ */
+export function renderPlaceholders(html: string, values: Record<string,string>) {
+  return html.replace(/{{\\s*([a-zA-Z0-9_]+)\\s*}}/g, (_match, key:string) => {
+    if(Object.prototype.hasOwnProperty.call(values,key)) return values[key];
+    if(/^employee_name[A-Za-z]{3,}$/.test(key) && values.employee_name?.trim()) {
+      return values.employee_name;
+    }
+    return `{{${key}}}`;
+  });
+}
 export function unresolvedPlaceholders(html: string){ return [...html.matchAll(/{{\s*([a-zA-Z0-9_]+)\s*}}/g)].map(m=>m[1]); }
 export function alignmentStyle(a: Alignment){ return { textAlign: a } as const; }
