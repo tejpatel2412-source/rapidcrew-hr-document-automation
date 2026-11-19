@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateForExport } from '../lib/validation';
+import { placeholderMap, renderPlaceholders } from '../lib/utils';
 import { defaultCompany } from '../lib/defaults';
 import type { DocumentData, EmployeeData, TemplateData } from '../lib/types';
 
@@ -26,5 +27,20 @@ describe('export validation',()=>{
    const errors=validateForExport({...defaultCompany,signatureDataUrl:undefined,stampDataUrl:undefined},employee,salaryDoc,salaryTemplate);
    expect(errors.join(' ')).not.toContain('signature');
    expect(errors.join(' ')).not.toContain('stamp');
+ });
+ it('recovers an accidental suffix inside the employee_name token when employee details exist',()=>{
+   const typo={...template,bodyHtml:'<p>Dear {{employee_namesdrfgerggedg}}</p>'};
+   expect(validateForExport(defaultCompany,employee,doc,typo)).toEqual([]);
+   expect(renderPlaceholders(typo.bodyHtml,placeholderMap(defaultCompany,employee,doc))).toContain('Dear Poojan Patel');
+ });
+ it('still blocks genuinely unknown or custom employee_name variables',()=>{
+   const custom={...template,bodyHtml:'<p>{{employee_name_suffix}} and {{unknown_value}}</p>'};
+   const errors=validateForExport(defaultCompany,employee,doc,custom).join(' ');
+   expect(errors).toContain('employee_name_suffix');
+   expect(errors).toContain('unknown_value');
+ });
+ it('does not replace malformed employee names with empty content when employee is missing',()=>{
+   const typo={...template,bodyHtml:'<p>{{employee_namesdrfgerggedg}}</p>'};
+   expect(validateForExport(defaultCompany,undefined,doc,typo).join(' ')).toContain('Employee Name is missing');
  });
 });
