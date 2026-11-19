@@ -113,7 +113,7 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
  * Other unknown variables (including employee_name_suffix) still block export.
  */
 export function renderPlaceholders(html: string, values: Record<string,string>) {
-  return html.replace(/{{\\s*([a-zA-Z0-9_]+)\\s*}}/g, (_match, key:string) => {
+  return html.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_match, key:string) => {
     if(Object.prototype.hasOwnProperty.call(values,key)) return values[key];
     if(/^employee_name[A-Za-z]{3,}$/.test(key) && values.employee_name?.trim()) {
       return values.employee_name;
