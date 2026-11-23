@@ -17,7 +17,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .document-body p { margin: 0 0 7px; line-height: 1.38; white-space: break-spaces; }
 .document-body li { white-space: break-spaces; }
 .rich-text-editor-content, .rich-text-editor-content p, .rich-text-editor-content li { white-space: break-spaces; }
-.document-body p:empty { min-height: 1em; margin-bottom: 7px; }
+.document-body p:empty, .document-body p:has(> br:only-child), .document-body p:has(> span:only-child:empty) { min-height: 1.25em; margin-bottom: 10px; }
+.document-body p:has(> br:only-child) { line-height: 1.5; }
 .document-body p > br:only-child { display: block; content: ''; min-height: 1em; }
 .document-body h1, .document-body h2, .document-body h3 { margin: 0 0 8px; line-height: 1.2; }
 .document-body h1 { font-size: 16px; }
@@ -25,10 +26,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .document-body h3 { font-size: 13px; }
 .document-density-compact { font-size: 11.5px; }
 .document-density-compact p { margin-bottom: 6px; line-height: 1.34; }
-.document-density-compact p:empty { min-height: .9em; }
+.document-density-compact p:empty { min-height: 1.25em; }
 .document-density-tight { font-size: 10.5px; }
 .document-density-tight p { margin-bottom: 4px; line-height: 1.28; }
-.document-density-tight p:empty { min-height: .75em; }
+.document-density-tight p:empty { min-height: 1.1em; }
 .document-density-tight h1, .document-density-tight h2, .document-density-tight h3 { margin-bottom: 5px; }
 .document-body table { width: 100%; border-collapse: collapse; }
 .document-body th, .document-body td { border: 1px solid #d1d5db; padding: 7px 8px; }
