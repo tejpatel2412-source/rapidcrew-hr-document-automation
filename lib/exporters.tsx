@@ -30,14 +30,17 @@ import { getLetterheadDetails } from './letterhead-details';
 import { docxLetterLayout, pdfLetterLayout } from './document-layout';
 
 function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\n{3,}/g,'\n\n').trim(); }
-type ExportBlock={text:string;kind:'heading'|'paragraph';align:'left'|'center'|'right'|'justify'};
+type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify'};
 function htmlBlocks(html:string):ExportBlock[]{
   const blocks:ExportBlock[]=[];
   const re=/<(h[1-6]|p|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
   for(const match of html.matchAll(re)){
-    const tag=match[1].toLowerCase(); const attrs=match[2]||''; const text=stripHtml(match[3]);
-    if(!text)continue;
+    const tag=match[1].toLowerCase(); const attrs=match[2]||''; const raw=match[3]||''; const text=stripHtml(raw);
     const styleAlign=(attrs.match(/text-align\s*:\s*(left|center|right|justify)/i)?.[1]?.toLowerCase()||'') as ExportBlock['align']|'';
+    if(!text){
+      if(tag==='p' && /^(?:\s|&nbsp;|<br\s*\/?\s*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left'});
+      continue;
+    }
     blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify')});
   }
   if(blocks.length)return blocks;
@@ -180,10 +183,12 @@ function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee
   const layout=pdfLetterLayout(rendered);
   return <Page size={{width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT}} style={[styles.page,{fontSize:layout.fontSize,lineHeight:layout.lineHeight}]} wrap={false}>
     <PdfLetterhead company={company}/>
-    {blocks.map((block,i)=><Text key={i} style={block.kind==='heading'
-      ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
-      :[styles.p,{textAlign:block.align,marginBottom:layout.paragraphGap}]
-    }>{block.text}</Text>)}
+    {blocks.map((block,i)=>block.kind==='spacer'
+      ?<View key={i} style={{height:Math.max(7,layout.paragraphGap+4)}}/>
+      :<Text key={i} style={block.kind==='heading'
+        ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
+        :[styles.p,{textAlign:block.align,marginBottom:layout.paragraphGap}]
+      }>{block.text}</Text>)}
     <PdfAuthorization company={company} doc={doc} compact/>
   </Page>;
 }
@@ -261,12 +266,18 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
     if(salaryAuth.showStamp&&salaryAuth.stampDataUrl){const stamp=await makeDocxImageRun(salaryAuth.stampDataUrl,Math.min(140,Math.max(60,salaryAuth.stampWidth)),Math.min(140,Math.max(60,salaryAuth.stampWidth)));if(stamp)children.push(new Paragraph({alignment:AlignmentType.LEFT,children:[stamp],spacing:{before:140}}));}
     children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:view.systemFooter,bold:true,size:16})],spacing:{before:100}}));
   } else {
-    blocks.forEach(block=>children.push(new Paragraph({
-      alignment:block.align==='center'?AlignmentType.CENTER:block.align==='right'?AlignmentType.RIGHT:block.align==='left'?AlignmentType.LEFT:AlignmentType.JUSTIFIED,
-      children:[new TextRun({text:block.text,size:block.kind==='heading'?letterLayout.headingSize:letterLayout.bodySize,bold:block.kind==='heading'})],
-      spacing:{after:block.kind==='heading'?letterLayout.headingAfter:letterLayout.paragraphAfter,line:260},
-      keepLines:true,
-    })));
+    blocks.forEach(block=>{
+      if(block.kind==='spacer'){
+        children.push(new Paragraph({children:[new TextRun({text:' ',size:letterLayout.bodySize})],spacing:{after:Math.max(80,letterLayout.paragraphAfter)}}));
+        return;
+      }
+      children.push(new Paragraph({
+        alignment:block.align==='center'?AlignmentType.CENTER:block.align==='right'?AlignmentType.RIGHT:block.align==='left'?AlignmentType.LEFT:AlignmentType.JUSTIFIED,
+        children:[new TextRun({text:block.text,size:block.kind==='heading'?letterLayout.headingSize:letterLayout.bodySize,bold:block.kind==='heading'})],
+        spacing:{after:block.kind==='heading'?letterLayout.headingAfter:letterLayout.paragraphAfter,line:260},
+        keepLines:true,
+      }));
+    });
     await appendDocxAuthorization(children,company,doc,true);
   }
   const {header,footer}=await buildDocxLetterhead(company);
