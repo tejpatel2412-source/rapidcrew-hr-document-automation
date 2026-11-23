@@ -54,17 +54,24 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
   const notice=doc.noticePeriod?.trim() || '';
   const resignation=doc.resignationDate?.trim() || '';
   const reference=doc.referenceNumber?.trim() || '';
-  const employmentType=employee?.employmentType?.trim() || '';
+  const offerValue=(override:string|undefined,fallback:string|undefined)=>override===undefined?(fallback||''):override;
+  const employeeName=offerValue(doc.offerEmployeeName,employee?.fullName);
+  const designation=offerValue(doc.offerDesignation,employee?.designation);
+  const department=offerValue(doc.offerDepartment,employee?.department);
+  const joiningDate=offerValue(doc.offerJoiningDate,employee?.joiningDate);
+  const workLocation=offerValue(doc.offerWorkLocation,employee?.workLocation);
+  const ctc=offerValue(doc.offerCtc,employee?.ctc);
+  const employmentType=offerValue(doc.offerEmploymentType,employee?.employmentType).trim();
   const reportingManager=employee?.reportingManager?.trim() || '';
   return {
-    employee_name: employee?.fullName || '',
+    employee_name: employeeName,
     employee_id: employee?.employeeId || '',
     employee_address: employee?.address || '',
-    designation: employee?.designation || '',
-    department: employee?.department || '',
+    designation,
+    department,
     company_name: company?.companyName || '',
     company_address: [company?.address, company?.city, company?.state, company?.country, company?.pin].filter(Boolean).join(', '),
-    joining_date: fmt(employee?.joiningDate),
+    joining_date: fmt(joiningDate),
     last_working_date: fmt(doc.lastWorkingDate || employee?.lastWorkingDate),
     document_date: fmt(doc.documentDate),
     relieving_date: fmt(doc.relievingDate || doc.documentDate),
@@ -78,8 +85,8 @@ export function placeholderMap(company: CompanyData | undefined, employee: Emplo
     reference_number: reference,
     custom_remarks: doc.customRemarks || '',
     salary: employee?.basicSalary || '',
-    ctc: employee?.ctc || '',
-    work_location: employee?.workLocation || '',
+    ctc,
+    work_location: workLocation,
     employment_type: employmentType,
     reporting_manager: reportingManager,
     signatory_name: company?.signatoryName || '',
