@@ -115,6 +115,13 @@ export interface DocumentData {
   relievingDate?: string;
   lastWorkingDate?: string;
   offerValidUntil?: string;
+  offerEmployeeName?: string;
+  offerDesignation?: string;
+  offerDepartment?: string;
+  offerJoiningDate?: string;
+  offerWorkLocation?: string;
+  offerCtc?: string;
+  offerEmploymentType?: string;
   internshipStartDate?: string;
   internshipEndDate?: string;
   internshipDuration?: string;
