@@ -46,7 +46,7 @@ function stripHtml(html:string){
     .replace(/\n{3,}/g,'\n\n');
   return preserveRepeatedSpaces(text).trim();
 }
-type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify'};
+type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify';gapLines?:number};
 function htmlBlocks(html:string):ExportBlock[]{
   const blocks:ExportBlock[]=[];
   const re=/<(h[1-6]|p|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
@@ -54,7 +54,7 @@ function htmlBlocks(html:string):ExportBlock[]{
     const tag=match[1].toLowerCase(); const attrs=match[2]||''; const raw=match[3]||''; const text=stripHtml(raw);
     const styleAlign=(attrs.match(/text-align\s*:\s*(left|center|right|justify)/i)?.[1]?.toLowerCase()||'') as ExportBlock['align']|'';
     if(!text){
-      if(tag==='p' && /^(?:\s|&nbsp;|&#160;|&#x[a-f0-9]+;|<br\b[^>]*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left'});
+      if(tag==='p' && /^(?:\s|&nbsp;|&#160;|&#x[a-f0-9]+;|<br\b[^>]*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left',gapLines:1});
       continue;
     }
     blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify')});
@@ -200,7 +200,7 @@ function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee
   return <Page size={{width:PDF_A4_WIDTH,height:PDF_A4_HEIGHT}} style={[styles.page,{fontSize:layout.fontSize,lineHeight:layout.lineHeight}]} wrap={false}>
     <PdfLetterhead company={company}/>
     {blocks.map((block,i)=>block.kind==='spacer'
-      ?<View key={i} style={{height:Math.max(13,layout.paragraphGap+8)}}/>
+      ?<View key={i} style={{height:Math.max(12,layout.fontSize*layout.lineHeight*(block.gapLines||1))}}/>
       :<Text key={i} style={block.kind==='heading'
         ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
         :[styles.p,{textAlign:block.align,marginBottom:layout.paragraphGap}]
@@ -284,7 +284,7 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
   } else {
     blocks.forEach(block=>{
       if(block.kind==='spacer'){
-        children.push(new Paragraph({children:[new TextRun({text:' ',size:letterLayout.bodySize})],spacing:{after:Math.max(180,letterLayout.paragraphAfter+90)}}));
+        children.push(new Paragraph({children:[new TextRun({text:' ',size:letterLayout.bodySize})],spacing:{line:260,after:0,before:0}}));
         return;
       }
       children.push(new Paragraph({
