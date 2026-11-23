@@ -29,7 +29,23 @@ import { LETTERHEAD, LETTERHEAD_MARK_DATA_URL, LETTERHEAD_WATERMARK_DATA_URL, do
 import { getLetterheadDetails } from './letterhead-details';
 import { docxLetterLayout, pdfLetterLayout } from './document-layout';
 
-function stripHtml(html:string){ return html.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\n{3,}/g,'\n\n').trim(); }
+function preserveRepeatedSpaces(text:string){
+  return text.replace(/ {2,}/g,(run)=>'\u00A0'.repeat(Math.max(1,run.length-1))+' ');
+}
+function stripHtml(html:string){
+  const text=html
+    .replace(/<br\b[^>]*>/gi,'\n')
+    .replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n')
+    .replace(/<[^>]*>/g,'')
+    .replace(/&nbsp;|&#160;/gi,'\u00A0')
+    .replace(/&ensp;/gi,'\u2002')
+    .replace(/&emsp;/gi,'\u2003')
+    .replace(/&amp;/g,'&')
+    .replace(/&#39;/g,"'")
+    .replace(/&quot;/g,'"')
+    .replace(/\n{3,}/g,'\n\n');
+  return preserveRepeatedSpaces(text).trim();
+}
 type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify'};
 function htmlBlocks(html:string):ExportBlock[]{
   const blocks:ExportBlock[]=[];
@@ -38,7 +54,7 @@ function htmlBlocks(html:string):ExportBlock[]{
     const tag=match[1].toLowerCase(); const attrs=match[2]||''; const raw=match[3]||''; const text=stripHtml(raw);
     const styleAlign=(attrs.match(/text-align\s*:\s*(left|center|right|justify)/i)?.[1]?.toLowerCase()||'') as ExportBlock['align']|'';
     if(!text){
-      if(tag==='p' && /^(?:\s|&nbsp;|<br\s*\/?\s*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left'});
+      if(tag==='p' && /^(?:\s|&nbsp;|&#160;|<br\b[^>]*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left'});
       continue;
     }
     blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify')});

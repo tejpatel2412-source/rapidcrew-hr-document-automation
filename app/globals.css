@@ -14,7 +14,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .a4-wrap { width: 210mm; min-height: 297mm; margin: 0 auto; }
 .a4-page { width: 210mm; height: 297mm; min-height: 297mm; max-height: 297mm; aspect-ratio: 210 / 297; flex: 0 0 auto; background: white; box-shadow: 0 8px 28px rgba(17,17,17,.12); padding: 20mm 18mm; margin: 0 auto; color: #111; }
 .document-body { font-size: 12px; line-height: 1.38; }
-.document-body p { margin: 0 0 7px; line-height: 1.38; }
+.document-body p { margin: 0 0 7px; line-height: 1.38; white-space: break-spaces; }
+.document-body li { white-space: break-spaces; }
+.rich-text-editor-content, .rich-text-editor-content p, .rich-text-editor-content li { white-space: break-spaces; }
 .document-body p:empty { min-height: 1em; margin-bottom: 7px; }
 .document-body p > br:only-child { display: block; content: ''; min-height: 1em; }
 .document-body h1, .document-body h2, .document-body h3 { margin: 0 0 8px; line-height: 1.2; }
