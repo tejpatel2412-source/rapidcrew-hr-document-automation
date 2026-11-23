@@ -32,4 +32,15 @@ describe('document-specific placeholder values',()=>{
    expect(blank.probation_line).toBe('');
    expect(blank.offer_validity_line).toBe('');
  });
+ it('uses document-level offer edits without changing the saved employee',()=>{
+   const values=placeholderMap(defaultCompany,employee,{...base,offerEmployeeName:'Edited Candidate',offerDesignation:'Senior Analyst',offerDepartment:'Sales',offerJoiningDate:'2026-10-05',offerWorkLocation:'Remote',offerCtc:'900000',offerEmploymentType:'Contract'});
+   expect(values.employee_name).toBe('Edited Candidate');
+   expect(values.designation).toBe('Senior Analyst');
+   expect(values.department).toBe('Sales');
+   expect(values.joining_date).toBe('05/10/2026');
+   expect(values.work_location).toBe('Remote');
+   expect(values.ctc).toBe('900000');
+   expect(values.employment_type_line).toContain('Contract');
+   expect(employee.fullName).toBe('Test Person');
+ });
 });
