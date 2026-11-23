@@ -32,8 +32,16 @@ import { docxLetterLayout, pdfLetterLayout } from './document-layout';
 function preserveRepeatedSpaces(text:string){
   return text.replace(/ {2,}/g,(run)=>'\u00A0'.repeat(Math.max(1,run.length-1))+' ');
 }
+function cleanOrphanMarkup(input:string){
+  return input
+    .replace(/&lt;\/?(?:p|div|li|h[1-6])&gt;/gi,' ')
+    .replace(/(^|[\s\n])\/?(?:p|div|li|h[1-6])>(?=\s|[^<])/gi,'$1')
+    .replace(/\/?(?:p|div|li|h[1-6])>(?=\s|$)/gi,' ')
+    .replace(/\s+\/p>/gi,' ')
+    .replace(/\/p>(?=\s|$)/gi,' ');
+}
 function stripHtml(html:string){
-  const text=html
+  const text=cleanOrphanMarkup(html)
     .replace(/<br\b[^>]*>/gi,'\n')
     .replace(/<\/(?:p|h[1-6]|li|div)>/gi,'\n')
     .replace(/<[^>]*>/g,'')
@@ -50,7 +58,7 @@ type ExportRun={text:string;bold?:boolean;italic?:boolean;underline?:boolean};
 type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify';gapLines?:number;runs?:ExportRun[]};
 
 function decodeInlineText(input:string){
-  return preserveRepeatedSpaces(input
+  return preserveRepeatedSpaces(cleanOrphanMarkup(input)
     .replace(/&nbsp;|&#160;/gi,'\u00A0')
     .replace(/&ensp;/gi,'\u2002')
     .replace(/&emsp;/gi,'\u2003')
@@ -78,7 +86,7 @@ function htmlBlocks(html:string):ExportBlock[]{
   const blocks:ExportBlock[]=[];
   const re=/<(h[1-6]|p|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
   for(const match of html.matchAll(re)){
-    const tag=match[1].toLowerCase(); const attrs=match[2]||''; const raw=match[3]||''; const text=stripHtml(raw);
+    const tag=match[1].toLowerCase(); const attrs=match[2]||''; const raw=cleanOrphanMarkup(match[3]||''); const text=stripHtml(raw);
     const styleAlign=(attrs.match(/text-align\s*:\s*(left|center|right|justify)/i)?.[1]?.toLowerCase()||'') as ExportBlock['align']|'';
     if(!text){
       if(tag==='p' && /^(?:\s|&nbsp;|&#160;|&#x[a-f0-9]+;|<br\b[^>]*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left',gapLines:1});
