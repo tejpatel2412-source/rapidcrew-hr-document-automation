@@ -46,7 +46,34 @@ function stripHtml(html:string){
     .replace(/\n{3,}/g,'\n\n');
   return preserveRepeatedSpaces(text).trim();
 }
-type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify';gapLines?:number};
+type ExportRun={text:string;bold?:boolean;italic?:boolean;underline?:boolean};
+type ExportBlock={text:string;kind:'heading'|'paragraph'|'spacer';align:'left'|'center'|'right'|'justify';gapLines?:number;runs?:ExportRun[]};
+
+function decodeInlineText(input:string){
+  return preserveRepeatedSpaces(input
+    .replace(/&nbsp;|&#160;/gi,'\u00A0')
+    .replace(/&ensp;/gi,'\u2002')
+    .replace(/&emsp;/gi,'\u2003')
+    .replace(/&amp;/g,'&')
+    .replace(/&#39;/g,"'")
+    .replace(/&quot;/g,'"'));
+}
+
+function inlineRuns(html:string):ExportRun[]{
+  const runs:ExportRun[]=[];
+  let bold=0,italic=0,underline=0;
+  const tokenRe=/(<\/?(?:strong|b|em|i|u)\b[^>]*>|<br\b[^>]*>|[^<]+)/gi;
+  for(const match of html.matchAll(tokenRe)){
+    const token=match[0];
+    if(/^<br\b/i.test(token)){runs.push({text:'\n',bold:bold>0,italic:italic>0,underline:underline>0});continue;}
+    if(/^<\/?strong\b/i.test(token)||/^<\/?b\b/i.test(token)){bold+=/^<\//.test(token)?-1:1;bold=Math.max(0,bold);continue;}
+    if(/^<\/?em\b/i.test(token)||/^<\/?i\b/i.test(token)){italic+=/^<\//.test(token)?-1:1;italic=Math.max(0,italic);continue;}
+    if(/^<\/?u\b/i.test(token)){underline+=/^<\//.test(token)?-1:1;underline=Math.max(0,underline);continue;}
+    const text=decodeInlineText(token.replace(/<[^>]*>/g,''));
+    if(text)runs.push({text,bold:bold>0,italic:italic>0,underline:underline>0});
+  }
+  return runs;
+}
 function htmlBlocks(html:string):ExportBlock[]{
   const blocks:ExportBlock[]=[];
   const re=/<(h[1-6]|p|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
@@ -57,7 +84,7 @@ function htmlBlocks(html:string):ExportBlock[]{
       if(tag==='p' && /^(?:\s|&nbsp;|&#160;|&#x[a-f0-9]+;|<br\b[^>]*>)*$/i.test(raw)) blocks.push({text:' ',kind:'spacer',align:'left',gapLines:1});
       continue;
     }
-    blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify')});
+    blocks.push({text,kind:tag.startsWith('h')?'heading':'paragraph',align:styleAlign||(tag.startsWith('h')?'center':'justify'),runs:inlineRuns(raw)});
   }
   if(blocks.length)return blocks;
   return stripHtml(html).split(/\n+/).filter(Boolean).map(text=>({text,kind:'paragraph' as const,align:'justify' as const}));
@@ -204,7 +231,7 @@ function PdfLetter({company,employee,doc,template}:{company:CompanyData;employee
       :<Text key={i} style={block.kind==='heading'
         ?[styles.heading,{textAlign:block.align,fontSize:layout.headingSize,marginBottom:layout.headingGap}]
         :[styles.p,{textAlign:block.align,marginBottom:layout.paragraphGap}]
-      }>{block.text}</Text>)}
+      }>{(block.runs?.length?block.runs:[{text:block.text}]).map((run,runIndex)=><Text key={runIndex} style={{fontWeight:run.bold?700:400,fontStyle:run.italic?'italic':'normal',textDecoration:run.underline?'underline':'none'}}>{run.text}</Text>)}</Text>)}
     <PdfAuthorization company={company} doc={doc} compact/>
   </Page>;
 }
@@ -289,7 +316,13 @@ export async function downloadDocx(company:CompanyData,employee:EmployeeData,doc
       }
       children.push(new Paragraph({
         alignment:block.align==='center'?AlignmentType.CENTER:block.align==='right'?AlignmentType.RIGHT:block.align==='left'?AlignmentType.LEFT:AlignmentType.JUSTIFIED,
-        children:[new TextRun({text:block.text,size:block.kind==='heading'?letterLayout.headingSize:letterLayout.bodySize,bold:block.kind==='heading'})],
+        children:(block.runs?.length?block.runs:[{text:block.text}]).map(run=>new TextRun({
+          text:run.text,
+          size:block.kind==='heading'?letterLayout.headingSize:letterLayout.bodySize,
+          bold:block.kind==='heading'||!!run.bold,
+          italics:!!run.italic,
+          underline:run.underline?{type:UnderlineType.SINGLE}:undefined,
+        })),
         spacing:{after:block.kind==='heading'?letterLayout.headingAfter:letterLayout.paragraphAfter,line:260},
         keepLines:true,
       }));
