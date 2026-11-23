@@ -7,7 +7,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, Italic, List, ListOrdered, Redo2, Underline as UnderlineIcon, Undo2 } from 'lucide-react';
 
 export default function RichTextEditor({value,onChange}:{value:string;onChange:(html:string)=>void}){
- const editor=useEditor({immediatelyRender:false,extensions:[StarterKit,Underline,TextAlign.configure({types:['heading','paragraph']})],content:value,onUpdate:({editor})=>onChange(editor.getHTML()),editorProps:{attributes:{class:'min-h-64 rounded-b-lg bg-white p-4 text-sm leading-6 focus:outline-none'}}});
+ const editor=useEditor({immediatelyRender:false,extensions:[StarterKit,Underline,TextAlign.configure({types:['heading','paragraph']})],content:value,onUpdate:({editor})=>onChange(editor.getHTML()),editorProps:{attributes:{class:'rich-text-editor-content min-h-64 rounded-b-lg bg-white p-4 text-sm leading-6 focus:outline-none'}}});
  useEffect(()=>{if(editor&&value!==editor.getHTML())editor.commands.setContent(value,false)},[value,editor]);
  if(!editor)return <div className="min-h-64 rounded-lg border bg-white"/>;
  const tool=(label:string,active:boolean,fn:()=>void,icon:React.ReactNode)=><button type="button" aria-label={label} title={label} onClick={fn} className={`rounded p-1.5 ${active?'brand-soft':'text-gray-600 hover:bg-gray-100'}`}>{icon}</button>;
