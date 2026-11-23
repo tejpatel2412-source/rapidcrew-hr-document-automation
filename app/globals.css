@@ -15,14 +15,18 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .a4-page { width: 210mm; height: 297mm; min-height: 297mm; max-height: 297mm; aspect-ratio: 210 / 297; flex: 0 0 auto; background: white; box-shadow: 0 8px 28px rgba(17,17,17,.12); padding: 20mm 18mm; margin: 0 auto; color: #111; }
 .document-body { font-size: 12px; line-height: 1.38; }
 .document-body p { margin: 0 0 7px; line-height: 1.38; }
+.document-body p:empty { min-height: 1em; margin-bottom: 7px; }
+.document-body p > br:only-child { display: block; content: ''; min-height: 1em; }
 .document-body h1, .document-body h2, .document-body h3 { margin: 0 0 8px; line-height: 1.2; }
 .document-body h1 { font-size: 16px; }
 .document-body h2 { font-size: 14px; }
 .document-body h3 { font-size: 13px; }
 .document-density-compact { font-size: 11.5px; }
 .document-density-compact p { margin-bottom: 6px; line-height: 1.34; }
+.document-density-compact p:empty { min-height: .9em; }
 .document-density-tight { font-size: 10.5px; }
 .document-density-tight p { margin-bottom: 4px; line-height: 1.28; }
+.document-density-tight p:empty { min-height: .75em; }
 .document-density-tight h1, .document-density-tight h2, .document-density-tight h3 { margin-bottom: 5px; }
 .document-body table { width: 100%; border-collapse: collapse; }
 .document-body th, .document-body td { border: 1px solid #d1d5db; padding: 7px 8px; }

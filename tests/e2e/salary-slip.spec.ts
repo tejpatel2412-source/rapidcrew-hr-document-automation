@@ -170,3 +170,26 @@ test('internship offer supports live template wording and PDF/DOCX export',async
   const docxDownload=await docxPromise;
   expect(docxDownload.suggestedFilename()).toMatch(/internship_offer_letter.*\.docx$/i);
 });
+
+
+test('offer letter left-side edits update the live document immediately',async({page})=>{
+  await page.goto('/create?type=offer-letter');
+  await page.getByLabel('Employee / Candidate *').selectOption({label:'Swarn Sharma · 43'});
+  const document=page.locator('#official-document');
+
+  await page.getByLabel('Candidate Name').fill('Live Edit Candidate');
+  await page.getByLabel('Designation',{exact:true}).fill('Senior Consultant');
+  await page.getByLabel('Department',{exact:true}).fill('Client Success');
+  await page.getByLabel('Joining Date',{exact:true}).fill('2026-12-01');
+  await page.getByLabel('Work Location',{exact:true}).fill('Ahmedabad');
+  await page.getByLabel('Annual CTC').fill('900000');
+  await page.getByLabel('Employment Type',{exact:true}).fill('Full-time');
+
+  await expect(document.getByText(/Live Edit Candidate/)).toBeVisible();
+  await expect(document.getByText(/Senior Consultant/)).toBeVisible();
+  await expect(document.getByText(/Client Success/)).toBeVisible();
+  await expect(document.getByText(/Ahmedabad/)).toBeVisible();
+  await expect(page.getByText('Live Letter Wording / Template')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Save Wording to Template'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Reset to Saved Template'})).toBeVisible();
+});

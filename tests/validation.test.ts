@@ -43,4 +43,10 @@ describe('export validation',()=>{
    const typo={...template,bodyHtml:'<p>{{employee_namesdrfgerggedg}}</p>'};
    expect(validateForExport(defaultCompany,undefined,doc,typo).join(' ')).toContain('Employee Name is missing');
  });
+ it('accepts live offer overrides for candidate name and designation',()=>{
+   const offerTemplate:TemplateData={...template,id:'offer',type:'offer-letter',bodyHtml:'<p>{{employee_name}} - {{designation}}</p>'};
+   const offerDoc:DocumentData={...doc,type:'offer-letter',templateId:'offer',offerEmployeeName:'Edited Candidate',offerDesignation:'Edited Role'};
+   const employeeMissingCore={...employee,fullName:'',designation:''};
+   expect(validateForExport(defaultCompany,employeeMissingCore,offerDoc,offerTemplate)).toEqual([]);
+ });
 });
